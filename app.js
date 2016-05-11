@@ -67,6 +67,7 @@ class CardMap
 				break;
 			}
 		}
+		card.id = this.map.length;
 		this.map.push(card);
 	}
 
@@ -80,13 +81,18 @@ class CardMap
 	{
 		var roll = Math.floor((Math.random() * 6) + 1);
 		var currentPosition = this.players[player.id].position;
+		console.log('or: ' + roll);
+		var path = [];
 		var cell = this.map[currentPosition];
+		path.push(cell.id);
 		while (roll-- > 0)
 		{
 			cell = cell.nextCard;
+			path.push(cell.id);
 		}
-		this.players[player.id].position = this.map.indexOf(cell);
-		return roll;
+		this.players[player.id].position = cell.id;
+		console.log(this.players[player.id].position);
+		return path;
 	}
 
 	export()
@@ -168,12 +174,12 @@ io.on('connection', function (socket)
 
 	socket.on('disconnect', function ()
 	{
-		delete players[socket.id];
 		socket.broadcast.emit('leftplayer',
 		{
 			player : players[socket.id]
 		}
 		);
+		delete players[socket.id];
 		console.log('player left with id: ' + socket.id);
 	}
 	);
@@ -184,11 +190,11 @@ io.on('connection', function (socket)
 		{
 			return;
 		}
-		var step = map.makeStep(players[socket.id]);
+		var path = map.makeStep(players[socket.id]);
 		io.sockets.emit('makestep',
 		{
 			player : players[socket.id],
-			roll : step
+			path : path
 		}
 		);
 	}

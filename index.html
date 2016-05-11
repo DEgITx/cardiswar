@@ -22,6 +22,8 @@
   window.addEventListener('DOMContentLoaded', function(){
       var players;
 	  var player;
+	  var map;
+	  var playersCursor = {};
 	  var game = new Phaser.Game(800, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update });
 	    
 	  socket.on('join', function (data) {
@@ -29,7 +31,7 @@
 			player = data.player;
 			console.log('Me with id ' + data.player.id + ' joined');
 			moneyText.text = 'money: ' + data.player.money;
-			
+			map = data.map.map;
 			for(var i = 0; i < data.map.map.length; i++)
 			{
 				var graphics = game.add.graphics(100, 100);
@@ -38,13 +40,14 @@
 				data.map.map[i].playerids.forEach(function(id, j){
 					let sep = data.map.map[i].width/data.map.map[i].playerids.length;
 					let tr = sep * j + sep / 2;
-					graphics.drawCircle(data.map.map[i].x + tr , data.map.map[i].y + data.map.map[i].height / 2, 5);
+					playersCursor[id] = game.add.graphics(100, 100);
+					playersCursor[id].lineStyle(2, 0xFF00FF, 1);
+					playersCursor[id].drawCircle(data.map.map[i].x + tr , data.map.map[i].y + data.map.map[i].height / 2, 5);
 				});
 			}
 			
 			socket.on('joinplayer', function (data) {
 				console.log('Player ' + data.player.id + ' join');
-				//delete players[data.playerid];
 			});
 			
 			socket.on('leftplayer', function (data) {
@@ -53,7 +56,10 @@
 			});
 			
 			socket.on('makestep', function(data){
-				diceText.text = 'dice: ' + data.roll;
+				var prevx
+				data.path.forEach(function(path){
+					playersCursor[data.player.id].x += 10 ;
+				});
 			});
 	  });
 
