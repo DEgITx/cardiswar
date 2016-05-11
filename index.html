@@ -19,98 +19,28 @@
 <script>
   var socket = io('http://localhost:8099');  
   
-  var CARD_TOP = 1;
-  var CARD_RIGHT = 2;
-  var CARD_BOTTOM = 3;
-  var CARD_LEFT = 4;
-  
   window.addEventListener('DOMContentLoaded', function(){
       var players;
 	  var player;
 	  var game = new Phaser.Game(800, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update });
-	  
-	    class Card {
-			constructor() {
-				this.nextCard = null;
-				this.prevCard = null;
-				
-				this.x = 50;
-				this.y = 50;
-				this.height = 70;
-				this.width = 70;
-				
-				this.cost = 0;
-				this.penalty = [];
-				this.currentPenalty = 0;
-			}
-			
-			draw() {
-				var graphics = game.add.graphics(100, 100);
-				graphics.lineStyle(2, 0x0000FF, 1);
-				graphics.drawRect(this.x, this.y, this.height, this.width);
-				
-			}
-		}
-		
-		class Map {
-			constructor() {
-				this.map = [];
-			}
-			
-			append(card, position)
-			{
-			    position = position || CARD_RIGHT;
-				if(this.map.length > 0)
-				{
-					this.map[this.map.length - 1].nextCard = card;
-					card.prevCard = this.map[this.map.length - 1];
-					card.nextCard = this.map[0];
-					this.map[0].prevCard = card;
-				}
-				else
-				{
-					card.nextCard = this.map[0];
-					card.prevCard = this.map[0];
-				}
-				if(this.map.length > 0)
-				{
-					switch(position)
-					{
-						case CARD_TOP:
-							card.x = this.map[this.map.length - 1].x;
-							card.y = this.map[this.map.length - 1].y - card.height;
-							break;
-						case CARD_RIGHT:
-							card.x = this.map[this.map.length - 1].x + this.map[this.map.length - 1].width;
-							card.y = this.map[this.map.length - 1].y;
-							break;
-						case CARD_BOTTOM:
-							card.x = this.map[this.map.length - 1].x;
-							card.y = this.map[this.map.length - 1].y  + this.map[this.map.length - 1].height;
-							break;
-						case CARD_LEFT:
-							card.x = this.map[this.map.length - 1].x  - card.width;
-							card.y = this.map[this.map.length - 1].y;
-							break;
-					}
-				}
-				this.map.push(card);
-			}
-			
-			draw()
-			{
-				for(var i = 0; i < this.map.length; i++)
-				{
-					this.map[i].draw();
-				}
-			}
-		}
-	  
+	    
 	  socket.on('join', function (data) {
-			players = data.players;
+			players = data.map.players;
 			player = data.player;
 			console.log('Me with id ' + data.player.id + ' joined');
 			moneyText.text = 'money: ' + data.player.money;
+			
+			for(var i = 0; i < data.map.map.length; i++)
+			{
+				var graphics = game.add.graphics(100, 100);
+				graphics.lineStyle(2, 0x0000FF, 1);
+				graphics.drawRect(data.map.map[i].x, data.map.map[i].y, data.map.map[i].height, data.map.map[i].width);
+				data.map.map[i].playerids.forEach(function(id, j){
+					let sep = data.map.map[i].width/data.map.map[i].playerids.length;
+					let tr = sep * j + sep / 2;
+					graphics.drawCircle(data.map.map[i].x + tr , data.map.map[i].y + data.map.map[i].height / 2, 5);
+				});
+			}
 			
 			socket.on('joinplayer', function (data) {
 				console.log('Player ' + data.player.id + ' join');
@@ -122,7 +52,7 @@
 				delete players[data.player.id];
 			});
 			
-			socket.on('rolldice', function(data){
+			socket.on('makestep', function(data){
 				diceText.text = 'dice: ' + data.roll;
 			});
 	  });
@@ -136,21 +66,8 @@
 			diceText = game.add.text(500, 16, 'dice: 0', { fontSize: '32px', fill: '#fff' });
 			
 			stepButton = game.add.button(game.world.centerX - 95, 400, 'button', function(){
-				socket.emit('rolldice', {});
+				socket.emit('makestep', {});
 			}, this, 2, 1, 0);
-			
-			var map = new Map();
-			map.append(new Card);
-			map.append(new Card);
-			map.append(new Card);
-			map.append(new Card, CARD_BOTTOM);
-			map.append(new Card, CARD_BOTTOM);
-			map.append(new Card, CARD_BOTTOM);
-			map.append(new Card, CARD_LEFT);
-			map.append(new Card, CARD_LEFT);
-			map.append(new Card, CARD_TOP);
-			map.append(new Card, CARD_TOP);
-			map.draw();
 		}
 
 		function update() {
