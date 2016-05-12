@@ -24,6 +24,7 @@
 	  var player;
 	  var map;
 	  var playersCursor = {};
+	  var cellCursor = [];
 	  var game = new Phaser.Game(800, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update });
 	  
 	  var playerDoingMove = false;
@@ -31,6 +32,11 @@
 	  function updatePlayers()
 	  {
 			moneyText.text = 'money: ' + player.money;
+			player.inventory.forEach(function(pl){
+				var graphics = game.add.graphics(0, 500);
+				graphics.lineStyle(2, 0xFF0000, 1);
+				graphics.drawRect(0, 0, pl.height, pl.width);
+			});
 	  }
 	  
 	  socket.on('join', function (data) {
@@ -43,9 +49,9 @@
 			updatePlayers();
 			for(var i = 0; i < map.length; i++)
 			{
-				var graphics = game.add.graphics(0, 0);
-				graphics.lineStyle(2, 0x0000FF, 1);
-				graphics.drawRect(map[i].x, map[i].y, map[i].height, map[i].width);
+				cellCursor[i] = game.add.graphics(0, 0);
+				cellCursor[i].lineStyle(2, 0x0000FF, 1);
+				cellCursor[i].drawRect(map[i].x, map[i].y, map[i].height, map[i].width);
 			}
 			for(var id in players)
 			{
@@ -87,6 +93,9 @@
 				}
 				if(data.result)
 				{
+					cellCursor[player.position].clear();
+					cellCursor[player.position].lineStyle(2, 0x00FF00, 1);
+					cellCursor[player.position].drawRect(map[player.position].x, map[player.position].y, map[player.position].height, map[player.position].width);
 					updatePlayers();
 				}
 			});

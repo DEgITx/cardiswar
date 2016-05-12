@@ -67,6 +67,8 @@ class PurchaseCard extends Card
 	toJSON()
 	{
 		var obj = Object.assign({}, this);
+		obj.nextCard = null;
+		obj.prevCard = null;
 		obj.owner = 0;
 		return obj;
 	}
@@ -232,7 +234,7 @@ app.use(express.static('public'));
 
 var players = {};
 var map = new CardMap;
-map.append(new Card);
+map.append(new PurchaseCard(1000, [2000]));
 map.append(new PurchaseCard(1000, [2000]));
 map.append(new PrisonCard);
 map.append(new Card, CARD_BOTTOM);
@@ -307,7 +309,7 @@ io.on('connection', function (socket)
 		var result = map.buyCard(players[socket.id]);
 		io.sockets.emit('buycard',
 		{
-			player : players[socket.id],
+			player : map.players[socket.id],
 			players : map.players,
 			result : result
 		}
