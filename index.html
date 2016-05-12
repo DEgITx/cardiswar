@@ -27,36 +27,42 @@
 	  var game = new Phaser.Game(800, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update });
 	  
 	  var playerDoingMove = false;
+
 	  
 	  socket.on('join', function (data) {
 			players = data.map.players;
 			player = data.player;
 			console.log('Me with id ' + data.player.id + ' joined');
+			console.log(data.player);
 			moneyText.text = 'money: ' + data.player.money;
 			map = data.map.map;
-			for(var i = 0; i < data.map.map.length; i++)
+			for(var i = 0; i < map.length; i++)
 			{
 				var graphics = game.add.graphics(0, 0);
 				graphics.lineStyle(2, 0x0000FF, 1);
-				graphics.drawRect(data.map.map[i].x, data.map.map[i].y, data.map.map[i].height, data.map.map[i].width);
-				data.map.map[i].playerids.forEach(function(id, j){
-					let sep = data.map.map[i].width/data.map.map[i].playerids.length;
+				graphics.drawRect(map[i].x, map[i].y, map[i].height, map[i].width);
+				map[i].playerids.forEach(function(id, j){
+					let sep = map[i].width/map[i].playerids.length;
 					let tr = sep * j + sep / 2;
-					//playersCursor[id] = game.add.graphics(100, 100);
-					playersCursor[id] = game.add.graphics(data.map.map[i].x + tr, data.map.map[i].y + data.map.map[i].height / 2);
+					playersCursor[id] = game.add.graphics(map[i].x + tr, map[i].y + map[i].height / 2);
 					playersCursor[id].lineStyle(2, 0xFF00FF, 1);
-					//playersCursor[id].drawCircle(data.map.map[i].x + tr , data.map.map[i].y + data.map.map[i].height / 2, 5);
 					playersCursor[id].drawCircle(0, 0, 5);
 				});
 			}
 			
 			socket.on('joinplayer', function (data) {
 				console.log('Player ' + data.player.id + ' join');
+				players[data.player.id] = data.player;
+				playersCursor[data.player.id] = game.add.graphics(map[data.player.position].x, map[data.player.position].y + map[data.player.position].height / 2);
+				playersCursor[data.player.id].lineStyle(2, 0xFF00FF, 1);
+				playersCursor[data.player.id].drawCircle(0, 0, 5);
 			});
 			
 			socket.on('leftplayer', function (data) {
 				console.log('Player ' + data.player.id + ' left');
 				delete players[data.player.id];
+				playersCursor[data.player.id].destroy();
+				delete playersCursor[data.player.id];
 			});
 			
 			socket.on('makestep', function(data){
@@ -64,11 +70,11 @@
 				playerDoingMove = true;
 			});
 	  });
-
+	  
 		function preload() {
 			
 		}
-
+		
 		function create() {		
 			moneyText = game.add.text(16, 16, 'money: 0', { fontSize: '32px', fill: '#fff' });
 			diceText = game.add.text(500, 16, 'dice: 0', { fontSize: '32px', fill: '#fff' });
