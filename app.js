@@ -22,6 +22,34 @@ class Card
 
 }
 
+class PurchaseCard extends Card 
+{
+	constructor(cost, penalty)
+	{
+		super();
+		this.cost = cost || 0;
+		this.penalty = penalty || [];
+		this.currentPenalty = 0;
+		this.owner = null;
+	}
+	
+	payPenality(culprit)
+	{
+		if(culprit == this.owner)
+		{
+			console.log('you own this card');
+			return;
+		}
+		
+		if(this.penalty[this.currentPenalty] != null && this.penalty[this.currentPenalty] > 0)
+		{
+			culprit.money -= this.penalty[this.currentPenalty];
+			this.owner.money += this.penalty[this.currentPenalty];
+		}
+		this.currentPenalty++
+	}
+}
+
 class CardMap
 {
 	constructor()
@@ -92,7 +120,36 @@ class CardMap
 		}
 		this.players[player.id].position = cell.id;
 		console.log(this.players[player.id].position);
+		
+		// Выплата штрафа
+		if(cell.owner != null && cell.owner != player)
+		{
+			cell.payPenality(player);
+		}
+		
 		return path;
+	}
+	
+	buyCard(player)
+	{
+		var currentPosition = this.players[player.id].position;
+		var card = this.map[currentPosition];
+		if(!(card instanceof PurchaseCard))
+		{
+			console.log('this is not pushase card');
+			return false;
+		}
+		
+		if(player.money < card.cost)
+		{
+			console.log('too high cost for this card');
+			return false;
+		}
+		
+		player.money -= card.cost;
+		card.owner = player;
+		player.inventory.push(card);
+		return true;
 	}
 
 	export()
@@ -138,7 +195,7 @@ app.use(express.static('public'));
 
 var players = {};
 var map = new CardMap;
-map.append(new Card);
+map.append(new PurchaseCard(1000));
 map.append(new Card);
 map.append(new Card);
 map.append(new Card, CARD_BOTTOM);
@@ -156,6 +213,7 @@ io.on('connection', function (socket)
 	{
 		id : socket.id,
 		money : 10000,
+		inventory: []
 	};
 	map.addPlayer(players[socket.id]);
 	console.log('player joins with id: ' + socket.id);
@@ -195,6 +253,22 @@ io.on('connection', function (socket)
 		{
 			player : players[socket.id],
 			path : path
+		}
+		);
+	}
+	);
+	
+	socket.on('buycard', function (data)
+	{
+		if (players[socket.id] == null)
+		{
+			return;
+		}
+		var result = map.buyCard(players[socket.id]);
+		io.sockets.emit('buycard',
+		{
+			player : players[socket.id],
+			result : result
 		}
 		);
 	}

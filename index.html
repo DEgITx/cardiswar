@@ -69,6 +69,11 @@
 				playersCursor[data.player.id].movePoints = data.path;
 				playerDoingMove = true;
 			});
+			
+			socket.on('buycard', function(data){
+				console.log(data.player.money);
+				console.log(player.money);
+			});
 	  });
 	  
 		function preload() {
@@ -80,7 +85,11 @@
 			diceText = game.add.text(500, 16, 'dice: 0', { fontSize: '32px', fill: '#fff' });
 			
 			stepButton = game.add.button(game.world.centerX - 95, 400, 'button', function(){
-				socket.emit('makestep', {});
+				socket.emit('makestep');
+			}, this, 2, 1, 0);
+			
+			buyButton = game.add.button(game.world.centerX - 95, 200, 'button', function(){
+				socket.emit('buycard');
 			}, this, 2, 1, 0);
 		}
 
