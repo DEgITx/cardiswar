@@ -28,14 +28,19 @@
 	  
 	  var playerDoingMove = false;
 
+	  function updatePlayers()
+	  {
+			moneyText.text = 'money: ' + player.money;
+	  }
 	  
 	  socket.on('join', function (data) {
 			players = data.map.players;
 			player = data.player;
-			console.log('Me with id ' + data.player.id + ' joined');
-			moneyText.text = 'money: ' + data.player.money;
 			map = data.map.map;
+			console.log('Me with id ' + data.player.id + ' joined');
 			console.log(map);
+			
+			updatePlayers();
 			for(var i = 0; i < map.length; i++)
 			{
 				var graphics = game.add.graphics(0, 0);
@@ -65,13 +70,25 @@
 			});
 			
 			socket.on('makestep', function(data){
+				players = data.players
+				if(data.player.id == player.id)
+				{
+					player = data.player;
+				}
 				playersCursor[data.player.id].movePoints = data.path;
 				playerDoingMove = true;
 			});
 			
 			socket.on('buycard', function(data){
-				console.log(data.player.money);
-				console.log(player.money);
+				players = data.players
+				if(data.player.id == player.id)
+				{
+					player = data.player;
+				}
+				if(data.result)
+				{
+					updatePlayers();
+				}
 			});
 	  });
 	  
@@ -130,6 +147,7 @@
 				if(!findMovePoint)
 				{
 					playerDoingMove = false;
+					updatePlayers();
 				}
 			}
 		

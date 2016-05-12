@@ -49,7 +49,10 @@ class PurchaseCard extends Card
 			culprit.money -= this.penalty[this.currentPenalty];
 			this.owner.money += this.penalty[this.currentPenalty];
 		}
-		this.currentPenalty++
+		if(this.currentPenalty < this.penalty.length - 1)
+			this.currentPenalty++
+		else
+			this.currentPenalty = 0;
 	}
 	
 	toJSON()
@@ -66,6 +69,8 @@ class CardMap
 	{
 		this.map = [];
 		this.players = {};
+		this.playersKeys = [];
+		this.currentTurn = 0;
 	}
 
 	append(card, position)
@@ -113,15 +118,23 @@ class CardMap
 	{
 		player.position = 0;
 		this.players[player.id] = player;
+		this.playersKeys = Object.keys(this.players);
 	}
 	
 	removePlayer(player)
 	{
 		delete this.players[player.id];
+		this.playersKeys = Object.keys(this.players);
 	}
 
 	makeStep(player)
 	{
+		if(this.players[this.playersKeys[this.currentTurn]].id != player.id)
+		{
+			console.log('not player turn');
+			return [];
+		}
+		
 		var roll = Math.floor((Math.random() * 6) + 1);
 		var currentPosition = this.players[player.id].position;
 		console.log('or: ' + roll);
@@ -135,6 +148,10 @@ class CardMap
 		}
 		this.players[player.id].position = cell.id;
 		console.log(this.players[player.id].position);
+		if(this.currentTurn < this.playersKeys.length - 1)
+			this.currentTurn++;
+		else
+			this.currentTurn = 0;
 		
 		// Выплата штрафа
 		if(cell.owner != null && cell.owner != player)
@@ -158,6 +175,12 @@ class CardMap
 		if(player.money < card.cost)
 		{
 			console.log('too high cost for this card');
+			return false;
+		}
+		
+		if(card.owner != null)
+		{
+			console.log('card already owned');
 			return false;
 		}
 		
@@ -186,7 +209,7 @@ app.use(express.static('public'));
 
 var players = {};
 var map = new CardMap;
-map.append(new PurchaseCard(1000));
+map.append(new PurchaseCard(1000, [2000]));
 map.append(new Card);
 map.append(new Card);
 map.append(new Card, CARD_BOTTOM);
@@ -244,6 +267,7 @@ io.on('connection', function (socket)
 		io.sockets.emit('makestep',
 		{
 			player : players[socket.id],
+			players : map.players,
 			path : path
 		}
 		);
@@ -260,6 +284,7 @@ io.on('connection', function (socket)
 		io.sockets.emit('buycard',
 		{
 			player : players[socket.id],
+			players : map.players,
 			result : result
 		}
 		);
