@@ -25,6 +25,15 @@ class Card
 	}
 }
 
+class PrisonCard extends Card 
+{
+	constructor(stepskip)
+	{
+		super();
+		this.stepskip = stepskip || 2;
+	}
+}
+
 class PurchaseCard extends Card 
 {
 	constructor(cost, penalty)
@@ -140,7 +149,20 @@ class CardMap
 		console.log('or: ' + roll);
 		var path = [];
 		var cell = this.map[currentPosition];
-		path.push(cell.id);
+		path.push(cell.id);		
+
+		if(this.currentTurn < this.playersKeys.length - 1)
+			this.currentTurn++;
+		else
+			this.currentTurn = 0;
+		
+		// пропуск хода
+		if(player.stepskip > 0)
+		{
+			player.stepskip--;
+			return path;
+		}
+		
 		while (roll-- > 0)
 		{
 			cell = cell.nextCard;
@@ -148,15 +170,16 @@ class CardMap
 		}
 		this.players[player.id].position = cell.id;
 		console.log(this.players[player.id].position);
-		if(this.currentTurn < this.playersKeys.length - 1)
-			this.currentTurn++;
-		else
-			this.currentTurn = 0;
 		
 		// Выплата штрафа
-		if(cell.owner != null && cell.owner != player)
+		if(cell instanceof PurchaseCard && cell.owner != null && cell.owner != player)
 		{
 			cell.payPenality(player);
+		}
+		
+		if(cell instanceof PrisonCard)
+		{
+			player.stepskip = cell.stepskip;
 		}
 		
 		return path;
@@ -209,9 +232,9 @@ app.use(express.static('public'));
 
 var players = {};
 var map = new CardMap;
+map.append(new Card);
 map.append(new PurchaseCard(1000, [2000]));
-map.append(new Card);
-map.append(new Card);
+map.append(new PrisonCard);
 map.append(new Card, CARD_BOTTOM);
 map.append(new Card, CARD_BOTTOM);
 map.append(new Card, CARD_BOTTOM);
@@ -228,6 +251,7 @@ io.on('connection', function (socket)
 		id : socket.id,
 		money : 10000,
 		inventory: [],
+		stepskip : 0,
 	};
 	map.addPlayer(players[socket.id]);
 	console.log('player joins with id: ' + socket.id);
