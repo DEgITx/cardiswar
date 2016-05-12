@@ -25,7 +25,9 @@
 	  var map;
 	  var playersCursor = {};
 	  var game = new Phaser.Game(800, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update });
-	    
+	  
+	  var playerDoingMove = false;
+	  
 	  socket.on('join', function (data) {
 			players = data.map.players;
 			player = data.player;
@@ -34,15 +36,17 @@
 			map = data.map.map;
 			for(var i = 0; i < data.map.map.length; i++)
 			{
-				var graphics = game.add.graphics(100, 100);
+				var graphics = game.add.graphics(0, 0);
 				graphics.lineStyle(2, 0x0000FF, 1);
 				graphics.drawRect(data.map.map[i].x, data.map.map[i].y, data.map.map[i].height, data.map.map[i].width);
 				data.map.map[i].playerids.forEach(function(id, j){
 					let sep = data.map.map[i].width/data.map.map[i].playerids.length;
 					let tr = sep * j + sep / 2;
-					playersCursor[id] = game.add.graphics(100, 100);
+					//playersCursor[id] = game.add.graphics(100, 100);
+					playersCursor[id] = game.add.graphics(data.map.map[i].x + tr, data.map.map[i].y + data.map.map[i].height / 2);
 					playersCursor[id].lineStyle(2, 0xFF00FF, 1);
-					playersCursor[id].drawCircle(data.map.map[i].x + tr , data.map.map[i].y + data.map.map[i].height / 2, 5);
+					//playersCursor[id].drawCircle(data.map.map[i].x + tr , data.map.map[i].y + data.map.map[i].height / 2, 5);
+					playersCursor[id].drawCircle(0, 0, 5);
 				});
 			}
 			
@@ -56,10 +60,8 @@
 			});
 			
 			socket.on('makestep', function(data){
-				var prevx
-				data.path.forEach(function(path){
-					playersCursor[data.player.id].x += 10 ;
-				});
+				playersCursor[data.player.id].movePoints = data.path;
+				playerDoingMove = true;
 			});
 	  });
 
@@ -77,6 +79,46 @@
 		}
 
 		function update() {
+			if(playerDoingMove)
+			{
+				var findMovePoint = false;
+				for(var id in playersCursor)
+				{
+					if(playersCursor[id].movePoints != null && playersCursor[id].movePoints.length > 0)
+					{
+						findMovePoint = true;
+						var point = playersCursor[id].movePoints[0];
+						if(playersCursor[id].x - map[point].x > 0)
+						{
+							playersCursor[id].x -= 1;
+						}
+						
+						if(-(playersCursor[id].x - map[point].x) > 0)
+						{
+							playersCursor[id].x += 1;
+						}
+						
+						if(playersCursor[id].y - map[point].y > 0)
+						{
+							playersCursor[id].y -= 1;
+						}
+						
+						if(-(playersCursor[id].y - map[point].y) > 0)
+						{
+							playersCursor[id].y += 1;
+						}
+						if(Math.abs(playersCursor[id].x - map[point].x) < 1 && Math.abs(playersCursor[id].y - map[point].y) < 1)
+						{
+							playersCursor[id].movePoints.shift();
+						}
+					}
+				}
+				if(!findMovePoint)
+				{
+					playerDoingMove = false;
+				}
+			}
+		
 			
 		}
 
