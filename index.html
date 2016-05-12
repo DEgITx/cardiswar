@@ -33,21 +33,20 @@
 			players = data.map.players;
 			player = data.player;
 			console.log('Me with id ' + data.player.id + ' joined');
-			console.log(data.player);
 			moneyText.text = 'money: ' + data.player.money;
 			map = data.map.map;
+			console.log(map);
 			for(var i = 0; i < map.length; i++)
 			{
 				var graphics = game.add.graphics(0, 0);
 				graphics.lineStyle(2, 0x0000FF, 1);
 				graphics.drawRect(map[i].x, map[i].y, map[i].height, map[i].width);
-				map[i].playerids.forEach(function(id, j){
-					let sep = map[i].width/map[i].playerids.length;
-					let tr = sep * j + sep / 2;
-					playersCursor[id] = game.add.graphics(map[i].x + tr, map[i].y + map[i].height / 2);
-					playersCursor[id].lineStyle(2, 0xFF00FF, 1);
-					playersCursor[id].drawCircle(0, 0, 5);
-				});
+			}
+			for(var id in players)
+			{
+				playersCursor[id] = game.add.graphics(map[players[id].position].x, map[players[id].position].y);
+				playersCursor[id].lineStyle(2, 0xFF00FF, 1);
+				playersCursor[id].drawCircle(0, 0, 5);
 			}
 			
 			socket.on('joinplayer', function (data) {

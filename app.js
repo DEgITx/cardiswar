@@ -14,12 +14,15 @@ class Card
 		this.y = 50;
 		this.height = 70;
 		this.width = 70;
-
-		this.cost = 0;
-		this.penalty = [];
-		this.currentPenalty = 0;
 	}
 
+	toJSON()
+	{
+		var obj = Object.assign({}, this);
+		obj.nextCard = null;
+		obj.prevCard = null;
+		return obj;
+	}
 }
 
 class PurchaseCard extends Card 
@@ -47,6 +50,13 @@ class PurchaseCard extends Card
 			this.owner.money += this.penalty[this.currentPenalty];
 		}
 		this.currentPenalty++
+	}
+	
+	toJSON()
+	{
+		var obj = Object.assign({}, this);
+		obj.owner = 0;
+		return obj;
 	}
 }
 
@@ -104,6 +114,11 @@ class CardMap
 		player.position = 0;
 		this.players[player.id] = player;
 	}
+	
+	removePlayer(player)
+	{
+		delete this.players[player.id];
+	}
 
 	makeStep(player)
 	{
@@ -151,31 +166,7 @@ class CardMap
 		player.inventory.push(card);
 		return true;
 	}
-
-	export()
-	{
-		return {
-			players: this.players,
-			map: (() => {
-				var arr = [];
-				for(var i = 0; i < this.map.length ; i++)
-				{
-					arr.push({
-						x : this.map[i].x,
-						y : this.map[i].y,
-						height : this.map[i].height,
-						width : this.map[i].height,
-						playerids : [],
-					});
-				}
-				for(var player in players)
-				{
-					arr[players[player].position].playerids.push(players[player].id);
-				}
-				return arr;
-			})()
-		};
-	}
+	
 }
 
 var express = require('express');
@@ -213,15 +204,15 @@ io.on('connection', function (socket)
 	{
 		id : socket.id,
 		money : 10000,
-		inventory: []
+		inventory: [],
 	};
 	map.addPlayer(players[socket.id]);
 	console.log('player joins with id: ' + socket.id);
-	console.log(map.export());
+	console.log(map);
 	socket.emit('join',
 	{
 		player : players[socket.id],
-		map: map.export()
+		map: map
 	}
 	);
 	socket.broadcast.emit('joinplayer',
@@ -237,6 +228,7 @@ io.on('connection', function (socket)
 			player : players[socket.id]
 		}
 		);
+		map.removePlayer(players[socket.id])
 		delete players[socket.id];
 		console.log('player left with id: ' + socket.id);
 	}
