@@ -34,15 +34,24 @@ class PrisonCard extends Card
 	}
 }
 
+class CardGroup {
+	constructor(color)
+	{
+		this.color = color || '#ff0000';
+	}
+}
+
 class PurchaseCard extends Card 
 {
-	constructor(cost, penalty)
+	constructor(cost, penalty, group)
 	{
 		super();
 		this.cost = cost || 0;
 		this.penalty = penalty || [];
 		this.currentPenalty = 0;
 		this.owner = null;
+		this.group = group || null;
+		this.groupEffect = 0;
 	}
 	
 	payPenality(culprit)
@@ -212,6 +221,15 @@ class CardMap
 		player.money -= card.cost;
 		card.owner = player;
 		player.inventory.push(card);
+		if(card.group != null)
+		{
+			if(player.cardGroupMap[card.group] == null)
+				player.cardGroupMap[card.group] = [];
+			player.cardGroupMap[card.group].push(card);
+			player.cardGroupMap[card.group].forEach(function(card){
+				card.groupEffect = player.cardGroupMap[card.group].length;
+			});
+		}
 		return true;
 	}
 	
@@ -254,6 +272,7 @@ io.on('connection', function (socket)
 		money : 10000,
 		inventory: [],
 		stepskip : 0,
+		cardGroupMap: {},
 	};
 	map.addPlayer(players[socket.id]);
 	console.log('player joins with id: ' + socket.id);
