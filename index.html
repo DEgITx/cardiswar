@@ -99,8 +99,15 @@ function LightenDarkenColor(num, amt) {
 	  
 	  var onlineGroup;
 	  var onlineGroupTexts = {};
+	  var onlineGroupTextsLastLength = 0;
 	  function drawOnline()
 	  {
+		if(onlineGroupTextsLastLength > Object.keys(players).length)
+		{
+			onlineGroup.destroy();
+			onlineGroup = null;
+			onlineGroupTexts = {};
+		}
 		if(onlineGroup == null)
 		{
 			onlineGroup = game.add.group();
@@ -124,6 +131,7 @@ function LightenDarkenColor(num, amt) {
 			
 			i++;
 		}
+		onlineGroupTextsLastLength = Object.keys(players).length;
 	  }
 	  
 	  socket.on('join', function (data) {
@@ -131,7 +139,7 @@ function LightenDarkenColor(num, amt) {
 	  		moneyText = game.add.text(16, 16, 'money: 0', { fontSize: '32px', fill: '#fff' });
 			diceText = game.add.text(500, 16, 'dice: 0', { fontSize: '32px', fill: '#fff' });
 			
-			stepButton = game.add.button(game.world.centerX - 95, 400, 'button', function(){
+			stepButton = game.add.button(game.world.width - 95, game.world.height - 90, 'next', function(){
 				socket.emit('makestep');
 			}, this, 2, 1, 0);
 			
@@ -209,6 +217,8 @@ function LightenDarkenColor(num, amt) {
 			
 			game.load.image('card', 'images/cards/card.png');
 			game.load.image('card_in', 'images/cards/sun.png');
+			
+			game.load.spritesheet('next', 'images/next.png');
 		}
 		
 		function create() {	
