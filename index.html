@@ -32,14 +32,98 @@
 	  
 	  var playerDoingMove = false;
 
+function LightenDarkenColor(num, amt) {
+    var r = (num >> 16) + amt;
+ 
+    if (r > 255) r = 255;
+    else if  (r < 0) r = 0;
+ 
+    var b = ((num >> 8) & 0x00FF) + amt;
+ 
+    if (b > 255) b = 255;
+    else if  (b < 0) b = 0;
+ 
+    var g = (num & 0x0000FF) + amt;
+ 
+    if (g > 255) g = 255;
+    else if (g < 0) g = 0;
+ 
+    return (g | (b << 8) | (r << 16));
+  
+}
+	  
 	  function updatePlayers()
 	  {
 			moneyText.text = 'money: ' + player.money;
-			var inventoryCard;
-			player.inventory.forEach(function(pl){
-				inventoryCard = game.add.sprite((inventoryCard != null ? inventoryCard.x + inventoryCard.width: 32), 32, 'card');
-				inventoryCard.scale.set(-5, -5);
+			player.inventory.forEach(function(card){
+				var cardGroup = game.add.group();
+				var cardImage = game.add.sprite(32, 32, 'card');
+				//cardGroup.create(32, 32, 'card');
+				cardGroup.scale.set(0.3, 0.3);
+				//cardGroup.scale.set(0.4, 0.4);
+				
+				var graphics = game.add.graphics(45, 53);
+				cardGroup.add(graphics);
+				graphics.beginFill(card.group.color, 1);
+				graphics.drawRect(30, 30, 635, 925);
+				
+				cardGroup.add(cardImage);
+				
+				
+				var cardCoolImage = game.add.sprite(70, 260, 'card_in');
+				cardCoolImage.width = 640;
+				cardCoolImage.height = 330;
+				cardGroup.add(cardCoolImage);
+				
+				graphics = game.add.graphics(45, 53);
+				cardGroup.add(graphics);
+				graphics.beginFill(LightenDarkenColor(card.group.color, 140), 1);
+				graphics.drawRoundedRect(410, 60, 220, 120, 20);
+				var costText = game.add.text(480, 133, card.cost, { fontSize: '64px', fill: '#000' });
+				cardGroup.add(costText);
+				
+				
+				card.penalty.forEach(function(penalty, i)
+				{
+					var graphics = game.add.graphics(45, 53);
+					cardGroup.add(graphics);
+					graphics.beginFill(LightenDarkenColor(card.group.color, 140), 1);
+					graphics.drawRoundedRect(80, 580 + (i*70), 530, 50, 20);
+					var penaltyText = game.add.text(135, 639 + (i*70), 'штраф ' + (i+1) + ": " + penalty, { fontSize: '30px', fill: '#000' });
+					cardGroup.add(penaltyText);
+				});
+				
+				cardGroup.y = game.world.height - cardGroup.height;
 			});
+	  }
+	  
+	  var onlineGroup;
+	  var onlineGroupTexts = {};
+	  function drawOnline()
+	  {
+		if(onlineGroup == null)
+		{
+			onlineGroup = game.add.group();
+			onlineGroup.alpha = 0.7;
+			var graphics = game.add.graphics(game.world.width - 260, 30);
+			onlineGroup.add(graphics);
+			graphics.beginFill(0x000000, 1);
+			graphics.drawRoundedRect(0, 0, 250, 300, 25);
+		}
+		var i = 0;
+		for(var id in players)
+		{
+			var text = players[id].nick + ' - ' + players[id].money + "$" + " - карт: " + players[id].inventory.length;
+			if(onlineGroupTexts[id] == null)
+			{
+				onlineGroupTexts[id] = game.add.text(game.world.width - 245, 50 + i * 40, text, { fontSize: '18px', fill: '#fff' });
+				onlineGroup.add(onlineGroupTexts[id]);
+			}
+			else
+				onlineGroupTexts[id].text = text;
+			
+			i++;
+		}
 	  }
 	  
 	  socket.on('join', function (data) {
@@ -62,6 +146,7 @@
 			console.log(map);
 			
 			updatePlayers();
+			drawOnline();
 			for(var i = 0; i < map.length; i++)
 			{
 				cellCursor[i] = game.add.graphics(0, 0);
@@ -81,6 +166,7 @@
 				playersCursor[data.player.id] = game.add.graphics(map[data.player.position].x, map[data.player.position].y + map[data.player.position].height / 2);
 				playersCursor[data.player.id].lineStyle(2, 0xFF00FF, 1);
 				playersCursor[data.player.id].drawCircle(0, 0, 5);
+				drawOnline();
 			});
 			
 			socket.on('leftplayer', function (data) {
@@ -88,6 +174,7 @@
 				delete players[data.player.id];
 				playersCursor[data.player.id].destroy();
 				delete playersCursor[data.player.id];
+				drawOnline();
 			});
 			
 			socket.on('makestep', function(data){
@@ -112,6 +199,7 @@
 					cellCursor[player.position].lineStyle(2, 0x00FF00, 1);
 					cellCursor[player.position].drawRect(map[player.position].x, map[player.position].y, map[player.position].height, map[player.position].width);
 					updatePlayers();
+					drawOnline();
 				}
 			});
 	  });
@@ -120,6 +208,7 @@
 			game.load.image('background', 'images/background.jpg');
 			
 			game.load.image('card', 'images/cards/card.png');
+			game.load.image('card_in', 'images/cards/sun.png');
 		}
 		
 		function create() {	
@@ -163,24 +252,24 @@
 						var point = playersCursor[id].movePoints[0];
 						if(playersCursor[id].x - map[point].x > 0)
 						{
-							playersCursor[id].x -= 1;
+							playersCursor[id].x -= 2;
 						}
 						
 						if(-(playersCursor[id].x - map[point].x) > 0)
 						{
-							playersCursor[id].x += 1;
+							playersCursor[id].x += 2;
 						}
 						
 						if(playersCursor[id].y - map[point].y > 0)
 						{
-							playersCursor[id].y -= 1;
+							playersCursor[id].y -= 2;
 						}
 						
 						if(-(playersCursor[id].y - map[point].y) > 0)
 						{
-							playersCursor[id].y += 1;
+							playersCursor[id].y += 2;
 						}
-						if(Math.abs(playersCursor[id].x - map[point].x) < 1 && Math.abs(playersCursor[id].y - map[point].y) < 1)
+						if(Math.abs(playersCursor[id].x - map[point].x) < 2 && Math.abs(playersCursor[id].y - map[point].y) < 2)
 						{
 							playersCursor[id].movePoints.shift();
 						}

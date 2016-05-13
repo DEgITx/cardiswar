@@ -37,7 +37,7 @@ class PrisonCard extends Card
 class CardGroup {
 	constructor(color)
 	{
-		this.color = color || '#ff0000';
+		this.color = color || '0xFF0000';
 	}
 }
 
@@ -254,8 +254,9 @@ app.use('/phaser-input', express.static('node_modules/phaser-input/build'));
 
 var players = {};
 var map = new CardMap;
-map.append(new PurchaseCard(1000, [2000]));
-map.append(new PurchaseCard(1000, [2000]));
+var redGroup = new CardGroup(0xAD1400);
+map.append(new PurchaseCard(1000, [2000, 3000, 4000], redGroup));
+map.append(new PurchaseCard(1000, [2000], redGroup));
 map.append(new PrisonCard);
 map.append(new Card, CARD_BOTTOM);
 map.append(new Card, CARD_BOTTOM);
