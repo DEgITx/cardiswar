@@ -249,6 +249,8 @@ app.get('/', function (req, res)
 );
 
 app.use(express.static('public'));
+app.use('/phaser', express.static('node_modules/phaser/build'));
+app.use('/phaser-input', express.static('node_modules/phaser-input/build'));
 
 var players = {};
 var map = new CardMap;
@@ -273,21 +275,9 @@ io.on('connection', function (socket)
 		inventory: [],
 		stepskip : 0,
 		cardGroupMap: {},
+		nick: '',
 	};
-	map.addPlayer(players[socket.id]);
-	console.log('player joins with id: ' + socket.id);
-	console.log(map);
-	socket.emit('join',
-	{
-		player : players[socket.id],
-		map: map
-	}
-	);
-	socket.broadcast.emit('joinplayer',
-	{
-		player : players[socket.id]
-	}
-	);
+	console.log('player connected with id: ' + socket.id);
 
 	socket.on('disconnect', function ()
 	{
@@ -301,7 +291,27 @@ io.on('connection', function (socket)
 		console.log('player left with id: ' + socket.id);
 	}
 	);
-
+	
+	socket.on('join', function (data)
+	{
+		players[socket.id].nick = data.nick;
+		map.addPlayer(players[socket.id]);
+		console.log('player joins with id: ' + socket.id + "and nick: " + players[socket.id].nick);
+		console.log(map);
+		socket.emit('join',
+		{
+			player : players[socket.id],
+			map: map
+		}
+		);
+		socket.broadcast.emit('joinplayer',
+		{
+			player : players[socket.id]
+		}
+		);
+	}
+	);
+	
 	socket.on('makestep', function (data)
 	{
 		if (players[socket.id] == null)

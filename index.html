@@ -1,6 +1,7 @@
 <head>
 <script src="/socket.io/socket.io.js"></script>
-<script src="/js/phaser.js"></script>
+<script src="/phaser/phaser.js"></script>
+<script src="/phaser-input/phaser-input.js"></script>
 <style>
         html, body {
             overflow: hidden;
@@ -20,26 +21,40 @@
   var socket = io('http://localhost:8099');  
   
   window.addEventListener('DOMContentLoaded', function(){
-      var players;
+      var joined = false;
+	  var nickInput;
+	  var players;
 	  var player;
 	  var map;
 	  var playersCursor = {};
 	  var cellCursor = [];
-	  var game = new Phaser.Game(800, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update });
+	  var game = new Phaser.Game(window.innerWidth, window.innerHeight, Phaser.AUTO, '', { preload: preload, create: create, update: update });
 	  
 	  var playerDoingMove = false;
 
 	  function updatePlayers()
 	  {
 			moneyText.text = 'money: ' + player.money;
+			var inventoryCard;
 			player.inventory.forEach(function(pl){
-				var graphics = game.add.graphics(0, 500);
-				graphics.lineStyle(2, 0xFF0000, 1);
-				graphics.drawRect(0, 0, pl.height, pl.width);
+				inventoryCard = game.add.sprite((inventoryCard != null ? inventoryCard.x + inventoryCard.width: 32), 32, 'card');
+				inventoryCard.scale.set(-5, -5);
 			});
 	  }
 	  
 	  socket.on('join', function (data) {
+			nickInput.destroy();
+	  		moneyText = game.add.text(16, 16, 'money: 0', { fontSize: '32px', fill: '#fff' });
+			diceText = game.add.text(500, 16, 'dice: 0', { fontSize: '32px', fill: '#fff' });
+			
+			stepButton = game.add.button(game.world.centerX - 95, 400, 'button', function(){
+				socket.emit('makestep');
+			}, this, 2, 1, 0);
+			
+			buyButton = game.add.button(game.world.centerX - 95, 200, 'button', function(){
+				socket.emit('buycard');
+			}, this, 2, 1, 0);
+	  
 			players = data.map.players;
 			player = data.player;
 			map = data.map.map;
@@ -102,20 +117,38 @@
 	  });
 	  
 		function preload() {
+			game.load.image('background', 'images/background.jpg');
 			
+			game.load.image('card', 'images/cards/card.png');
 		}
 		
-		function create() {		
-			moneyText = game.add.text(16, 16, 'money: 0', { fontSize: '32px', fill: '#fff' });
-			diceText = game.add.text(500, 16, 'dice: 0', { fontSize: '32px', fill: '#fff' });
+		function create() {	
+			var background = game.add.image(0, 0, 'background');
+			//var backgroundRatio = background.width/background.height
 			
-			stepButton = game.add.button(game.world.centerX - 95, 400, 'button', function(){
-				socket.emit('makestep');
-			}, this, 2, 1, 0);
+			game.add.plugin(Fabrique.Plugins.InputField);
+			nickInput = game.add.inputField(game.world.centerX, game.world.centerY, {
+				font: '36px Arial',
+				fill: '#666666',
+				fontWeight: 'bold',
+				width: 350,
+				height: 45,
+				padding: 8,
+				borderWidth: 1,
+				borderColor: '#000',
+				borderRadius: 6,
+				placeHolder: 'Your Nick',
+			});
+			nickInput.x -= nickInput.width / 2;
+			nickInput.y -= nickInput.height / 2;
 			
-			buyButton = game.add.button(game.world.centerX - 95, 200, 'button', function(){
-				socket.emit('buycard');
-			}, this, 2, 1, 0);
+			game.input.keyboard.onDownCallback = function(e) {
+				if(e.keyCode == 13 && !joined && nickInput.text.text.length > 0)
+				{
+					joined = true;
+					socket.emit('join', { nick: nickInput.text.text});
+				}
+			};
 		}
 
 		function update() {
