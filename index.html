@@ -26,6 +26,7 @@
 	  var players;
 	  var player;
 	  var map;
+	  var currentTurn = null;
 	  var playersCursor = {};
 	  var cellCursor = [];
 	  var game = new Phaser.Game(window.innerWidth, window.innerHeight, Phaser.AUTO, '', { preload: preload, create: create, update: update });
@@ -52,7 +53,7 @@ function LightenDarkenColor(num, amt) {
   
 }
 	  
-	  function updatePlayers()
+	  function drawInventory()
 	  {
 			moneyText.text = 'money: ' + player.money;
 			player.inventory.forEach(function(card){
@@ -89,7 +90,7 @@ function LightenDarkenColor(num, amt) {
 					cardGroup.add(graphics);
 					graphics.beginFill(LightenDarkenColor(card.group.color, 140), 1);
 					graphics.drawRoundedRect(80, 580 + (i*70), 530, 50, 20);
-					var penaltyText = game.add.text(135, 639 + (i*70), 'штраф ' + (i+1) + ": " + penalty, { fontSize: '30px', fill: '#000' });
+					var penaltyText = game.add.text(135, 639 + (i*70), (card.currentPenalty == i ? '> ' : '') + 'штраф ' + (i+1) + ": " + penalty, { fontSize: '30px', fill: '#000' });
 					cardGroup.add(penaltyText);
 				});
 				
@@ -120,7 +121,7 @@ function LightenDarkenColor(num, amt) {
 		var i = 0;
 		for(var id in players)
 		{
-			var text = players[id].nick + ' - ' + players[id].money + "$" + " - карт: " + players[id].inventory.length;
+			var text = (currentTurn != null && currentTurn.id == id ? '> ' : '') + players[id].nick + ' - ' + players[id].money + "$" + " - карт: " + players[id].inventory.length;
 			if(onlineGroupTexts[id] == null)
 			{
 				onlineGroupTexts[id] = game.add.text(game.world.width - 245, 50 + i * 40, text, { fontSize: '18px', fill: '#fff' });
@@ -153,7 +154,7 @@ function LightenDarkenColor(num, amt) {
 			console.log('Me with id ' + data.player.id + ' joined');
 			console.log(map);
 			
-			updatePlayers();
+			drawInventory();
 			drawOnline();
 			for(var i = 0; i < map.length; i++)
 			{
@@ -192,6 +193,7 @@ function LightenDarkenColor(num, amt) {
 					player = data.player;
 				}
 				playersCursor[data.player.id].movePoints = data.path;
+				currentTurn = data.turn;
 				playerDoingMove = true;
 			});
 			
@@ -206,7 +208,7 @@ function LightenDarkenColor(num, amt) {
 					cellCursor[player.position].clear();
 					cellCursor[player.position].lineStyle(2, 0x00FF00, 1);
 					cellCursor[player.position].drawRect(map[player.position].x, map[player.position].y, map[player.position].height, map[player.position].width);
-					updatePlayers();
+					drawInventory();
 					drawOnline();
 				}
 			});
@@ -288,7 +290,8 @@ function LightenDarkenColor(num, amt) {
 				if(!findMovePoint)
 				{
 					playerDoingMove = false;
-					updatePlayers();
+					drawInventory();
+					drawOnline();
 				}
 			}
 		

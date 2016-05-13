@@ -35,9 +35,10 @@ class PrisonCard extends Card
 }
 
 class CardGroup {
-	constructor(color)
+	constructor(color, image)
 	{
 		this.color = color || '0xFF0000';
+		this.image = image || '';
 	}
 }
 
@@ -254,8 +255,8 @@ app.use('/phaser-input', express.static('node_modules/phaser-input/build'));
 
 var players = {};
 var map = new CardMap;
-var redGroup = new CardGroup(0xAD1400);
-map.append(new PurchaseCard(1000, [2000, 3000, 4000], redGroup));
+var redGroup = new CardGroup(0xAD1400, 'images/cards/sun.png');
+map.append(new PurchaseCard(1000, [2000, 3000, 4000, 5000, 6000], redGroup));
 map.append(new PurchaseCard(1000, [2000], redGroup));
 map.append(new PrisonCard);
 map.append(new Card, CARD_BOTTOM);
@@ -324,7 +325,8 @@ io.on('connection', function (socket)
 		{
 			player : players[socket.id],
 			players : map.players,
-			path : path
+			path : path,
+			turn : map.players[map.playersKeys[map.currentTurn]],
 		}
 		);
 	}
