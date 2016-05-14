@@ -5,7 +5,7 @@ var CARD_LEFT = 4;
 
 class Card
 {
-	constructor()
+	constructor(image)
 	{
 		this.nextCard = null;
 		this.prevCard = null;
@@ -14,6 +14,8 @@ class Card
 		this.y = 50;
 		this.height = 70;
 		this.width = 70;
+		
+		this.image = image || '';
 	}
 
 	toJSON()
@@ -23,6 +25,16 @@ class Card
 		obj.prevCard = null;
 		return obj;
 	}
+	
+	postStep(map, player, position)
+	{
+		
+	}
+	
+	preStep(map, player, position)
+	{
+		return true;
+	}
 }
 
 class PrisonCard extends Card 
@@ -31,6 +43,23 @@ class PrisonCard extends Card
 	{
 		super();
 		this.stepskip = stepskip || 2;
+		this.image = 'images/cards/prison.png';
+	}
+	
+	postStep(map, player, position)
+	{
+		player.stepskip = this.stepskip;
+	}
+	
+	preStep(map, player, position)
+	{
+		// пропуск хода
+		if(player.stepskip > 0)
+		{
+			player.stepskip--;
+			return false;
+		}
+		return true;
 	}
 }
 
@@ -169,10 +198,9 @@ class CardMap
 		else
 			this.currentTurn = 0;
 		
-		// пропуск хода
-		if(player.stepskip > 0)
+		// Выпоняем действия карты перед ходом
+		if(!cell.preStep(this, player, this.players[player.id].position))
 		{
-			player.stepskip--;
 			return path;
 		}
 		
@@ -190,10 +218,8 @@ class CardMap
 			cell.payPenality(player);
 		}
 		
-		if(cell instanceof PrisonCard)
-		{
-			player.stepskip = cell.stepskip;
-		}
+		// Выпоняем действия карты после хода
+		cell.postStep(this, player, this.players[player.id].position);
 		
 		return path;
 	}
@@ -257,8 +283,8 @@ app.use('/phaser-input', express.static('node_modules/phaser-input/build'));
 var players = {};
 var map = new CardMap;
 var redGroup = new CardGroup(0xAD1400, 'images/cards/sun.png');
-map.append(new PurchaseCard(1000, [2000, 3000, 4000, 5000, 6000], redGroup));
-map.append(new PurchaseCard(1000, [2000], redGroup));
+map.append(new PurchaseCard(250, [2000, 3000, 4000, 5000, 6000], redGroup));
+map.append(new PurchaseCard(400, [2000], redGroup));
 map.append(new PrisonCard);
 map.append(new Card, CARD_BOTTOM);
 map.append(new Card, CARD_BOTTOM);

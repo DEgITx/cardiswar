@@ -180,9 +180,32 @@ function LightenDarkenColor(num, amt) {
 	  {
 		for(var i = 0; i < map.length; i++)
 			{
+				function cellImage(image, cell)
+				{
+					loadTexture(image, function(){
+						var cardCoolImage = game.add.sprite(map[cell].x, map[cell].y, image);
+						cardCoolImage.width = map[cell].width;
+						cardCoolImage.height = map[cell].height;
+					});
+				}
+			
+				if(map[i].image.length > 0)
+				{
+					cellImage(map[i].image, i);
+				}
+				else if(map[i].group != null && map[i].group.image.length > 0)
+				{
+					cellImage(map[i].group.image, i);
+				}
+				
+				if(map[i].cost > 0)
+				{
+					var groupEffectText = game.add.text(map[i].x + map[i].width/2 - 23, map[i].y + map[i].height/2 - 10, map[i].cost, { fontSize: '20px', fill: '#000' });
+				}
+				
 				cellCursor[i] = game.add.graphics(0, 0);
-				cellCursor[i].lineStyle(2, 0x0000FF, 1);
-				cellCursor[i].drawRect(map[i].x, map[i].y, map[i].height, map[i].width);
+				cellCursor[i].lineStyle(1, 0xDDDDDD, 1);
+				cellCursor[i].drawRect(map[i].x, map[i].y, map[i].width, map[i].height);
 			}
 			for(var id in players)
 			{
