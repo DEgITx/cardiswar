@@ -53,11 +53,19 @@ function LightenDarkenColor(num, amt) {
   
 }
 	  
+	  var cardGroups = [];
 	  function drawInventory()
 	  {
 			moneyText.text = 'money: ' + player.money;
-			player.inventory.forEach(function(card){
+			var oldCardX = 0;
+			player.inventory.forEach(function(card, index){
+				if(cardGroups[index] != null)
+				{
+					cardGroups[index].destroy();
+					delete cardGroups[index];
+				}
 				var cardGroup = game.add.group();
+				cardGroups[index] = cardGroup;
 				var cardImage = game.add.sprite(32, 32, 'card');
 				//cardGroup.create(32, 32, 'card');
 				cardGroup.scale.set(0.3, 0.3);
@@ -83,6 +91,13 @@ function LightenDarkenColor(num, amt) {
 				var costText = game.add.text(480, 133, card.cost, { fontSize: '64px', fill: '#000' });
 				cardGroup.add(costText);
 				
+				graphics = game.add.graphics(45, 53);
+				cardGroup.add(graphics);
+				graphics.beginFill(LightenDarkenColor(card.group.color, 140), 1);
+				graphics.drawCircle(110,120,100);
+				var groupEffectText = game.add.text(134, 132, card.groupEffect, { fontSize: '64px', fill: '#000' });
+				cardGroup.add(groupEffectText);
+				
 				
 				card.penalty.forEach(function(penalty, i)
 				{
@@ -95,6 +110,8 @@ function LightenDarkenColor(num, amt) {
 				});
 				
 				cardGroup.y = game.world.height - cardGroup.height;
+				cardGroup.x = oldCardX + cardGroup.width;
+				oldCardX = cardGroup.x;
 			});
 	  }
 	  

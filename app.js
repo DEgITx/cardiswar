@@ -156,7 +156,8 @@ class CardMap
 			return [];
 		}
 		
-		var roll = Math.floor((Math.random() * 6) + 1);
+		//var roll = Math.floor((Math.random() * 6) + 1);
+		var roll = 1;
 		var currentPosition = this.players[player.id].position;
 		console.log('or: ' + roll);
 		var path = [];
