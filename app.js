@@ -16,6 +16,7 @@ class Card
 		this.width = 70;
 		
 		this.image = image || '';
+		this.mapPlayers = {};
 	}
 
 	toJSON()
@@ -23,6 +24,9 @@ class Card
 		var obj = Object.assign({}, this);
 		obj.nextCard = null;
 		obj.prevCard = null;
+		obj.mapPlayers = [];
+		for(var id in this.mapPlayers)
+			obj.mapPlayers.push(id);
 		return obj;
 	}
 	
@@ -108,7 +112,11 @@ class PurchaseCard extends Card
 		var obj = Object.assign({}, this);
 		obj.nextCard = null;
 		obj.prevCard = null;
-		obj.owner = 0;
+		if(obj.owner != null)
+			obj.owner = obj.owner.id;
+		obj.mapPlayers = [];
+		for(var id in this.mapPlayers)
+			obj.mapPlayers.push(id);
 		return obj;
 	}
 }
@@ -168,11 +176,13 @@ class CardMap
 	{
 		player.position = 0;
 		this.players[player.id] = player;
+		this.map[0].mapPlayers[player.id] = player;
 		this.playersKeys = Object.keys(this.players);
 	}
 	
 	removePlayer(player)
 	{
+		delete this.map[this.players[player.id].position].mapPlayers[player.id];
 		delete this.players[player.id];
 		this.playersKeys = Object.keys(this.players);
 	}
@@ -185,12 +195,13 @@ class CardMap
 			return [];
 		}
 		
-		//var roll = Math.floor((Math.random() * 6) + 1);
-		var roll = 1;
+		var roll = Math.floor((Math.random() * 6) + 1);
+		//var roll = 1;
 		var currentPosition = this.players[player.id].position;
 		console.log('or: ' + roll);
 		var path = [];
 		var cell = this.map[currentPosition];
+		delete cell.mapPlayers[player.id];
 		path.push(cell.id);		
 
 		if(this.currentTurn < this.playersKeys.length - 1)
@@ -210,6 +221,7 @@ class CardMap
 			path.push(cell.id);
 		}
 		this.players[player.id].position = cell.id;
+		cell.mapPlayers[player.id] = player;
 		console.log(this.players[player.id].position);
 		
 		// Выплата штрафа
@@ -342,7 +354,8 @@ io.on('connection', function (socket)
 		);
 		socket.broadcast.emit('joinplayer',
 		{
-			player : players[socket.id]
+			player : players[socket.id],
+			map: map
 		}
 		);
 	}
@@ -358,7 +371,7 @@ io.on('connection', function (socket)
 		io.sockets.emit('makestep',
 		{
 			player : players[socket.id],
-			players : map.players,
+			map : map,
 			path : path,
 			turn : map.players[map.playersKeys[map.currentTurn]],
 		}

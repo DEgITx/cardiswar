@@ -176,19 +176,51 @@ function LightenDarkenColor(num, amt) {
 		onlineGroupTextsLastLength = Object.keys(players).length;
 	  }
 	  
+	  function counterPlayerCordModMain(x, y, width, height, length, index)
+	  {
+			var power = Math.ceil(Math.sqrt(length));
+			return {
+				x: (x + (width / (power + 1)) * ((index % power) + 1)),
+				y: (y + (height / ((length / power) + 1)) * (((index / power)|0) + 1))
+			};
+	  }
+	  function counterPlayerCordMod(card, index)
+	  {
+			if(index.id != null)
+				index = card.mapPlayers.indexOf(index.id);
+			//alert(card.mapPlayers.length + ":" + index);
+			return counterPlayerCordModMain(card.x, card.y, card.width, card.height, card.mapPlayers.length, index);
+	  }
+	  var playersColors = [
+		0xF21164,
+		0xD4F211,
+		0x11F2CD,
+		0x9111F2,
+		0x11A3F2,
+		0xF29C11,
+		0xF21189
+	  ];
+	  var playersColorsNum = 0;
 	  function drawMap()
 	  {
+		cellCursor.forEach(function(cell){
+			cell.destroy();
+		});
+		cellCursor = [];
 		for(var i = 0; i < map.length; i++)
 			{
+				cellCursor[i] = game.add.group();
+				
 				function cellImage(image, cell)
 				{
 					loadTexture(image, function(){
 						var cardCoolImage = game.add.sprite(map[cell].x, map[cell].y, image);
 						cardCoolImage.width = map[cell].width;
 						cardCoolImage.height = map[cell].height;
+						cellCursor[cell].add(cardCoolImage);
 					});
 				}
-			
+				
 				if(map[i].image.length > 0)
 				{
 					cellImage(map[i].image, i);
@@ -203,15 +235,23 @@ function LightenDarkenColor(num, amt) {
 					var groupEffectText = game.add.text(map[i].x + map[i].width/2 - 23, map[i].y + map[i].height/2 - 10, map[i].cost, { fontSize: '20px', fill: '#000' });
 				}
 				
-				cellCursor[i] = game.add.graphics(0, 0);
-				cellCursor[i].lineStyle(1, 0xDDDDDD, 1);
-				cellCursor[i].drawRect(map[i].x, map[i].y, map[i].width, map[i].height);
-			}
-			for(var id in players)
-			{
-				playersCursor[id] = game.add.graphics(map[players[id].position].x, map[players[id].position].y);
-				playersCursor[id].lineStyle(2, 0xFF00FF, 1);
-				playersCursor[id].drawCircle(0, 0, 5);
+				
+				var line = game.add.graphics(0, 0);
+				line.lineStyle(1, 0xDDDDDD, 1);
+				line.drawRect(map[i].x, map[i].y, map[i].width, map[i].height);
+				cellCursor[i].add(line);
+				
+				map[i].mapPlayers.forEach(function(gamer, index){
+					var newCord = counterPlayerCordMod(map[i], index);
+	
+					var color = playersColorsNum + 1 < playersColors.length ? playersColors[playersColorsNum++] : playersColors[playersColorsNum = 0];
+					playersCursor[gamer] = game.add.graphics(newCord.x, newCord.y);
+					playersCursor[gamer].beginFill(LightenDarkenColor(color, 50), 1);
+					playersCursor[gamer].drawCircle(0, 0, 25);
+					playersCursor[gamer].lineStyle(4, color, 1);
+					playersCursor[gamer].drawCircle(0, 0, 25);
+					cellCursor[i].add(playersCursor[gamer]);
+				});
 			}
 	  }
 	  
@@ -244,10 +284,9 @@ function LightenDarkenColor(num, amt) {
 			
 			socket.on('joinplayer', function (data) {
 				console.log('Player ' + data.player.id + ' join');
-				players[data.player.id] = data.player;
-				playersCursor[data.player.id] = game.add.graphics(map[data.player.position].x, map[data.player.position].y + map[data.player.position].height / 2);
-				playersCursor[data.player.id].lineStyle(2, 0xFF00FF, 1);
-				playersCursor[data.player.id].drawCircle(0, 0, 5);
+				map = data.map.map;
+				players = data.map.players;
+				drawMap();
 				drawOnline();
 			});
 			
@@ -260,7 +299,8 @@ function LightenDarkenColor(num, amt) {
 			});
 			
 			socket.on('makestep', function(data){
-				players = data.players
+				map = data.map.map;
+				players = data.map.players;
 				if(data.player.id == player.id)
 				{
 					player = data.player;
@@ -327,6 +367,7 @@ function LightenDarkenColor(num, amt) {
 			};
 		}
 
+		var waitPlayerCursorOnPoint;
 		function update() {
 			if(playerDoingMove)
 			{
@@ -337,26 +378,35 @@ function LightenDarkenColor(num, amt) {
 					{
 						findMovePoint = true;
 						var point = playersCursor[id].movePoints[0];
-						if(playersCursor[id].x - map[point].x > 0)
+						// Изменяем расположение курсора для последней точки на реальное
+						var movePoint = {
+							x: map[point].x + map[point].width / 2,
+							y: map[point].y + map[point].height / 2
+						};
+						if(playersCursor[id].movePoints.length == 1)
 						{
-							playersCursor[id].x -= 2;
+							movePoint = counterPlayerCordMod(map[point], players[id]);
+						}
+						if(playersCursor[id].x - movePoint.x > 0)
+						{
+							playersCursor[id].x -= 3;
 						}
 						
-						if(-(playersCursor[id].x - map[point].x) > 0)
+						if(-(playersCursor[id].x - movePoint.x) > 0)
 						{
-							playersCursor[id].x += 2;
+							playersCursor[id].x += 3;
 						}
 						
-						if(playersCursor[id].y - map[point].y > 0)
+						if(playersCursor[id].y - movePoint.y > 0)
 						{
-							playersCursor[id].y -= 2;
+							playersCursor[id].y -= 3;
 						}
 						
-						if(-(playersCursor[id].y - map[point].y) > 0)
+						if(-(playersCursor[id].y - movePoint.y) > 0)
 						{
-							playersCursor[id].y += 2;
+							playersCursor[id].y += 3;
 						}
-						if(Math.abs(playersCursor[id].x - map[point].x) < 2 && Math.abs(playersCursor[id].y - map[point].y) < 2)
+						if(Math.abs(playersCursor[id].x - movePoint.x) < 3 && Math.abs(playersCursor[id].y - movePoint.y) < 3)
 						{
 							playersCursor[id].movePoints.shift();
 						}
