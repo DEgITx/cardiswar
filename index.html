@@ -53,6 +53,21 @@ function LightenDarkenColor(num, amt) {
   
 }
 	  
+	  function loadTexture(texture, callback)
+	  {
+					if(!game.cache.checkImageKey(texture))
+					{
+						var loader = new Phaser.Loader(game);
+						loader.image(texture, texture)
+						loader.onLoadComplete.addOnce(callback);
+						loader.start();
+					}
+					else
+					{
+						callback();
+					}
+	  }
+	  
 	  var cardGroups = [];
 	  function drawInventory()
 	  {
@@ -78,11 +93,20 @@ function LightenDarkenColor(num, amt) {
 				
 				cardGroup.add(cardImage);
 				
+				if(card.group.image.length > 0)
+				{
+					graphics = game.add.graphics(0, 0);
+					graphics.beginFill(0xFFFFFF, 1);
+					graphics.drawRect(75, 260, 635, 330);
+					cardGroup.add(graphics);
 				
-				var cardCoolImage = game.add.sprite(70, 260, 'card_in');
-				cardCoolImage.width = 640;
-				cardCoolImage.height = 330;
-				cardGroup.add(cardCoolImage);
+					loadTexture(card.group.image, function(){
+						var cardCoolImage = game.add.sprite(230, 260, card.group.image);
+						cardCoolImage.width = 330;
+						cardCoolImage.height = 330;
+						cardGroup.add(cardCoolImage);
+					});
+				}
 				
 				graphics = game.add.graphics(45, 53);
 				cardGroup.add(graphics);
@@ -152,6 +176,22 @@ function LightenDarkenColor(num, amt) {
 		onlineGroupTextsLastLength = Object.keys(players).length;
 	  }
 	  
+	  function drawMap()
+	  {
+		for(var i = 0; i < map.length; i++)
+			{
+				cellCursor[i] = game.add.graphics(0, 0);
+				cellCursor[i].lineStyle(2, 0x0000FF, 1);
+				cellCursor[i].drawRect(map[i].x, map[i].y, map[i].height, map[i].width);
+			}
+			for(var id in players)
+			{
+				playersCursor[id] = game.add.graphics(map[players[id].position].x, map[players[id].position].y);
+				playersCursor[id].lineStyle(2, 0xFF00FF, 1);
+				playersCursor[id].drawCircle(0, 0, 5);
+			}
+	  }
+	  
 	  socket.on('join', function (data) {
 			nickInput.destroy();
 	  		moneyText = game.add.text(16, 16, 'money: 0', { fontSize: '32px', fill: '#fff' });
@@ -173,18 +213,7 @@ function LightenDarkenColor(num, amt) {
 			
 			drawInventory();
 			drawOnline();
-			for(var i = 0; i < map.length; i++)
-			{
-				cellCursor[i] = game.add.graphics(0, 0);
-				cellCursor[i].lineStyle(2, 0x0000FF, 1);
-				cellCursor[i].drawRect(map[i].x, map[i].y, map[i].height, map[i].width);
-			}
-			for(var id in players)
-			{
-				playersCursor[id] = game.add.graphics(map[players[id].position].x, map[players[id].position].y);
-				playersCursor[id].lineStyle(2, 0xFF00FF, 1);
-				playersCursor[id].drawCircle(0, 0, 5);
-			}
+			drawMap();
 			
 			socket.on('joinplayer', function (data) {
 				console.log('Player ' + data.player.id + ' join');
