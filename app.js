@@ -393,7 +393,7 @@ map.append(new PrisonCard, CARD_LEFT);
 var inyanGroup = new CardGroup(0xDB3B9E, 'images/cards/inyan.jpg', 'Добро и зло - эти 2 карты неразлучны, до того момента пока 2 идиота их не купят, каждый по одной.');
 map.append(new PurchaseCard(12500, [10000, 12500, 15000, 17500, 20000], inyanGroup), CARD_TOP);
 map.append(new PurchaseCard(15000, [15000, 17500, 20000, 22000, 25000], inyanGroup), CARD_TOP);
-var darknessGroup = new CardGroup(0x000000, 'images/cards/darkness.png', 'Лишь тьма. И другие злые эфекты тьмы.');
+var darknessGroup = new CardGroup(0x010101, 'images/cards/darkness.png', 'Лишь тьма. И другие злые эфекты тьмы.');
 map.append(new PurchaseCard(18000, [15000, 18000, 20000, 25000, 27500], darknessGroup), CARD_TOP);
 map.append(new PurchaseCard(20000, [17500, 19000, 24000, 28000, 30000], darknessGroup), CARD_LEFT);
 map.append(new WhiteCard, CARD_TOP);
