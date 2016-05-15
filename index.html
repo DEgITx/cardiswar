@@ -370,7 +370,7 @@ function LightenDarkenColor(num, amt) {
 			};
 		}
 
-		var waitPlayerCursorOnPoint;
+		var waitPlayerCursorOnPoint = 1;
 		function update() {
 			if(playerDoingMove)
 			{
@@ -393,28 +393,30 @@ function LightenDarkenColor(num, amt) {
 						movePoint.x -= playersCursor[id].width / 2;
 						movePoint.y -= playersCursor[id].height / 2;
 						game.world.bringToTop(playersCursor[id]);
-						if(playersCursor[id].x - movePoint.x > 0)
+						waitPlayerCursorOnPoint--;
+						if(playersCursor[id].x - movePoint.x > 0 && waitPlayerCursorOnPoint <= 0)
 						{
-							playersCursor[id].x -= 3;
+							playersCursor[id].x -= 4;
 						}
 						
-						if(-(playersCursor[id].x - movePoint.x) > 0)
+						if(-(playersCursor[id].x - movePoint.x) > 0 && waitPlayerCursorOnPoint <= 0)
 						{
-							playersCursor[id].x += 3;
+							playersCursor[id].x += 4;
 						}
 						
-						if(playersCursor[id].y - movePoint.y > 0)
+						if(playersCursor[id].y - movePoint.y > 0 && waitPlayerCursorOnPoint <= 0)
 						{
-							playersCursor[id].y -= 3;
+							playersCursor[id].y -= 4;
 						}
 						
-						if(-(playersCursor[id].y - movePoint.y) > 0)
+						if(-(playersCursor[id].y - movePoint.y) > 0 && waitPlayerCursorOnPoint <= 0)
 						{
-							playersCursor[id].y += 3;
+							playersCursor[id].y += 4;
 						}
-						if(Math.abs(playersCursor[id].x - movePoint.x) < 3 && Math.abs(playersCursor[id].y - movePoint.y) < 3)
+						if(Math.abs(playersCursor[id].x - movePoint.x) < 4 && Math.abs(playersCursor[id].y - movePoint.y) < 4)
 						{
 							playersCursor[id].movePoints.shift();
+							waitPlayerCursorOnPoint = 25;
 						}
 					}
 				}
