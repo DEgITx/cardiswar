@@ -182,7 +182,11 @@ class CardMap
 	
 	removePlayer(player)
 	{
-		delete this.map[this.players[player.id].position].mapPlayers[player.id];
+		player.inventory.forEach(function(card){
+			card.owner = null;
+		});
+		if(this.players[player.id] != null)
+			delete this.map[this.players[player.id].position].mapPlayers[player.id];
 		delete this.players[player.id];
 		this.playersKeys = Object.keys(this.players);
 	}
