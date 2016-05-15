@@ -65,6 +65,7 @@ class PrisonCard extends Card
 	preStep(map, player, position)
 	{
 		// пропуск хода
+		console.log('Player ' + player.nick + "in prison left: " + player.stepskip + ' stepskips');
 		if(player.stepskip > 0)
 		{
 			player.stepskip--;
@@ -210,13 +211,12 @@ class CardMap
 			return [];
 		}
 		
-		var roll = Math.floor((Math.random() * 6) + 1);
-		//var roll = 1;
+		//var roll = Math.floor((Math.random() * 6) + 1);
+		var roll = 1;
 		var currentPosition = this.players[player.id].position;
-		console.log('or: ' + roll);
+		console.log('player ' + this.players[player.id].nick + ' roll: ' + roll);
 		var path = [];
 		var cell = this.map[currentPosition];
-		delete cell.mapPlayers[player.id];
 		path.push(cell.id);		
 
 		if(this.currentTurn < this.playersKeys.length - 1)
@@ -230,6 +230,7 @@ class CardMap
 			return path;
 		}
 		
+		delete cell.mapPlayers[player.id];
 		while (roll-- > 0)
 		{
 			cell = cell.nextCard;
