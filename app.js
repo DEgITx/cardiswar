@@ -9,14 +9,19 @@ class Card
 	{
 		this.nextCard = null;
 		this.prevCard = null;
-
+		this.mapPlayers = {};
+		
 		this.x = 50;
 		this.y = 50;
 		this.height = 70;
 		this.width = 70;
 		
 		this.image = image || '';
-		this.mapPlayers = {};
+		this.needFill = false;
+		this.fillColor = 0xFFFFFF;
+		
+		this.text = '';
+		this.description = '';
 	}
 
 	toJSON()
@@ -68,10 +73,12 @@ class PrisonCard extends Card
 }
 
 class CardGroup {
-	constructor(color, image)
+	constructor(color, image, text)
 	{
 		this.color = color || '0xFF0000';
 		this.image = image || '';
+		this.text = text || '';
+		this.description = '';
 	}
 }
 
@@ -298,24 +305,18 @@ app.use('/phaser-input', express.static('node_modules/phaser-input/build'));
 
 var players = {};
 var map = new CardMap;
-map.append(new Card); // Старт
-var sunGroup = new CardGroup(0xD6D600, 'images/cards/sun.png');
+
+// Рисуем карту
+var startCard = new Card('images/cards/finish_flag.png');
+startCard.needFill = true;
+map.append(startCard); // Старт
+var sunGroup = new CardGroup(0xD6D600, 'images/cards/sun.png', 'Это солнечный сет, несущий счатье и радость людям. Единственный минус, то что он слабенький.');
 map.append(new PurchaseCard(250, [100, 200, 250, 300, 350], sunGroup));
 map.append(new Card);
 map.append(new PurchaseCard(350, [200, 350, 500, 600, 750], sunGroup));
 map.append(new PurchaseCard(500, [300, 400, 550, 700, 900], sunGroup));
 
-//var fireGroup = new CardGroup(0xAD1400, 'images/cards/fure.png');
-//map.append(new PurchaseCard(250, [2000, 3000, 4000, 5000, 6000], fireGroup));
-//map.append(new PurchaseCard(400, [2000], fireGroup));
-//map.append(new PrisonCard);
-//map.append(new Card, CARD_BOTTOM);
-//map.append(new Card, CARD_BOTTOM);
-//map.append(new Card, CARD_BOTTOM);
-//map.append(new Card, CARD_LEFT);
-//map.append(new Card, CARD_LEFT);
-//map.append(new Card, CARD_TOP);
-//map.append(new Card, CARD_TOP);
+
 
 io.on('connection', function (socket)
 {

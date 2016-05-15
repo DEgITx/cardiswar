@@ -97,15 +97,26 @@ function LightenDarkenColor(num, amt) {
 				{
 					graphics = game.add.graphics(0, 0);
 					graphics.beginFill(0xFFFFFF, 1);
-					graphics.drawRect(75, 260, 635, 330);
+					graphics.drawRect(75, 260, 635, 280);
 					cardGroup.add(graphics);
 				
 					loadTexture(card.group.image, function(){
-						var cardCoolImage = game.add.sprite(230, 260, card.group.image);
-						cardCoolImage.width = 330;
-						cardCoolImage.height = 330;
+						var cardCoolImage = game.add.sprite(250, 260, card.group.image);
+						cardCoolImage.width = 280;
+						cardCoolImage.height = 280;
 						cardGroup.add(cardCoolImage);
 					});
+				}
+				
+				var text = '';
+				if(card.text.length > 0)
+					text = card.text;
+				else if(card.group.text.length > 0)
+					text = card.group.text;
+				if(text.length > 0)
+				{
+					var cardText = game.add.text(90, 550, text, { fontSize: '31px', fill: '#000', wordWrap: true, wordWrapWidth: 628 });
+					cardGroup.add(cardText);
 				}
 				
 				graphics = game.add.graphics(45, 53);
@@ -128,8 +139,8 @@ function LightenDarkenColor(num, amt) {
 					var graphics = game.add.graphics(45, 53);
 					cardGroup.add(graphics);
 					graphics.beginFill(LightenDarkenColor(card.group.color, 140), 1);
-					graphics.drawRoundedRect(80, 580 + (i*70), 530, 50, 20);
-					var penaltyText = game.add.text(135, 639 + (i*70), (card.currentPenalty == i ? '> ' : '') + 'штраф ' + (i+1) + ": " + penalty, { fontSize: '30px', fill: '#000' });
+					graphics.drawRoundedRect(80, 70 + 580 + (i*58), 530, 50, 20);
+					var penaltyText = game.add.text(135, 70 + 639 + (i*58), (card.currentPenalty == i ? '> ' : '') + 'штраф ' + (i+1) + ": " + penalty, { fontSize: '30px', fill: '#000' });
 					cardGroup.add(penaltyText);
 				});
 				
@@ -213,6 +224,15 @@ function LightenDarkenColor(num, amt) {
 						cardCoolImage.z = 0;
 						mapGroup.add(cardCoolImage);
 					});
+				}
+				
+				if(map[i].needFill)
+				{
+					var fill = game.add.graphics(0, 0);
+					fill.beginFill(map[i].fillColor, 1);
+					fill.drawRect(map[i].x, map[i].y, map[i].width, map[i].height);
+					fill.endFill();
+					mapGroup.add(fill);
 				}
 				
 				if(map[i].image.length > 0)
