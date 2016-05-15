@@ -69,11 +69,21 @@ function LightenDarkenColor(num, amt) {
 	  }
 	  
 	  var cardGroups = [];
-	  function drawInventory()
+	  var drawInventoryAligin = 0;
+	  var drawInventoryAliginLength = 4;
+	  function drawInventory(align, alignLength)
 	  {
+			drawInventoryAligin = align || drawInventoryAligin;
+			drawInventoryAliginLength = alignLength || drawInventoryAliginLength;
+			var workAlignLength = drawInventoryAliginLength;
 			moneyText.text = player.money + "$";
 			var oldCardX = 0;
 			player.inventory.forEach(function(card, index){
+				if(drawInventoryAligin > 0 && index < drawInventoryAligin)
+					return;
+				if(drawInventoryAliginLength > 0 && workAlignLength-- <= 0)
+					return;
+			
 				if(cardGroups[index] != null)
 				{
 					cardGroups[index].destroy();
@@ -346,6 +356,37 @@ function LightenDarkenColor(num, amt) {
 			}, this, 2, 1, 0);
 			buyButton.width = 80;
 			buyButton.height = 80;
+			
+			buttonHideCards = game.add.button(game.world.width  - 250, game.world.height - 50, 'down', function(){
+				cardGroups.forEach(function(card){
+					if(card.visible == 0)
+						card.visible = 1;
+					else
+						card.visible = 0;
+				});
+			}, this, 2, 1, 0);
+			buttonHideCards.width = 50;
+			buttonHideCards.height = 50;
+			
+			buttonLeftCards = game.add.button(120, game.world.height - 50, 'left', function(){
+					if(drawInventoryAligin > 0)
+					{
+						drawInventoryAligin--;
+						drawInventory();
+					}
+			}, this, 2, 1, 0);
+			buttonLeftCards.width = 50;
+			buttonLeftCards.height = 50;
+			
+			buttonRightCards = game.add.button(game.world.width - 330, game.world.height - 50, 'right', function(){
+					if(drawInventoryAligin < player.inventory.length - drawInventoryAliginLength)
+					{
+						drawInventoryAligin++;
+						drawInventory();
+					}
+			}, this, 2, 1, 0);
+			buttonRightCards.width = 50;
+			buttonRightCards.height = 50;
 	  
 			players = data.map.players;
 			player = data.player;
@@ -397,6 +438,12 @@ function LightenDarkenColor(num, amt) {
 				}
 				if(data.result)
 				{
+					if(player.inventory.length - drawInventoryAliginLength > 0)
+						drawInventoryAligin = player.inventory.length - drawInventoryAliginLength;
+					cardGroups.forEach(function(card){
+						card.visible = 1;
+					});
+						
 					drawInventory();
 					drawOnline();
 					drawCardInfo();
@@ -413,6 +460,9 @@ function LightenDarkenColor(num, amt) {
 			game.load.image('next', 'images/next.png');
 			game.load.image('buy', 'images/buy.png');
 			game.load.image('bag', 'images/bag.png');
+			game.load.image('down', 'images/down.png');
+			game.load.image('right', 'images/right.png');
+			game.load.image('left', 'images/left.png');
 			
 			game.load.image('fishka_0', 'images/fishka/fishka_red.png');
 			game.load.image('fishka_1', 'images/fishka/fishka_purple.png');
