@@ -29,6 +29,7 @@
 	  var currentTurn = null;
 	  var playersCursor = {};
 	  var mapGroup = null;
+	  var loadingGroup = null
 	  var game = new Phaser.Game(window.innerWidth, window.innerHeight, Phaser.AUTO, '', { preload: preload, create: create, update: update });
 	  
 	  var playerDoingMove = false;
@@ -469,8 +470,14 @@ function LightenDarkenColor(num, amt) {
 				{
 					player = data.player;
 				}
+				
 				playersCursor[data.player.id].movePoints = data.path;
 				currentTurn = data.turn;
+				if(currentTurn.id != data.player.id && loadingGroup != null)
+				{
+					loadingGroup.destroy();
+					loadingGroup = null;
+				}
 				playerDoingMove = true;
 			});
 			
@@ -502,6 +509,7 @@ function LightenDarkenColor(num, amt) {
 	  
 		function preload() {
 			game.load.image('background', 'images/background.jpg');
+			game.load.spritesheet('loading', 'images/pikachu.png', 232, 227, 7);
 			
 			game.load.image('card', 'images/card.png');
 			game.load.image('card_in', 'images/cards/sun.png');
@@ -606,6 +614,22 @@ function LightenDarkenColor(num, amt) {
 					drawOnline();
 					drawCardInfo();
 					playerDoingMove = false;
+					
+					if(currentTurn.id == player.id)
+					{
+						if(loadingGroup != null)
+						{
+							loadingGroup.destroy();
+							loadingGroup = null;
+						}
+						loadingGroup = game.add.group();
+						var loading = game.add.sprite(game.world.width - 550, 30, 'loading');
+						loading.animations.add('spin');
+						loading.animations.play('spin', 7, true);
+						loadingGroup.add(loading);
+						var loadingText = game.add.text(game.world.width - 550, 250, 'Пикачу крутится\n и ожидает вашего хода', { fontSize: '20px', fill: '#000' });
+						loadingGroup.add(loadingText);
+					}
 				}
 			}
 		
