@@ -3,10 +3,12 @@ var CARD_RIGHT = 2;
 var CARD_BOTTOM = 3;
 var CARD_LEFT = 4;
 
+var CARD_ID = 0;
 class Card
 {
 	constructor(image)
 	{
+		this.id = ++CARD_ID;
 		this.nextCard = null;
 		this.prevCard = null;
 		this.mapPlayers = {};
@@ -72,9 +74,11 @@ class PrisonCard extends Card
 	}
 }
 
+var CARD_GROUP_ID = 0;
 class CardGroup {
 	constructor(color, image, text)
 	{
+		this.id = ++CARD_GROUP_ID;
 		this.color = color || '0xFF0000';
 		this.image = image || '';
 		this.text = text || '';
@@ -274,11 +278,11 @@ class CardMap
 		player.inventory.push(card);
 		if(card.group != null)
 		{
-			if(player.cardGroupMap[card.group] == null)
-				player.cardGroupMap[card.group] = [];
-			player.cardGroupMap[card.group].push(card);
-			player.cardGroupMap[card.group].forEach(function(card){
-				card.groupEffect = player.cardGroupMap[card.group].length;
+			if(player.cardGroupMap[card.group.id] == null)
+				player.cardGroupMap[card.group.id] = [];
+			player.cardGroupMap[card.group.id].push(card);
+			player.cardGroupMap[card.group.id].forEach(function(card){
+				card.groupEffect = player.cardGroupMap[card.group.id].length;
 			});
 		}
 		return true;
