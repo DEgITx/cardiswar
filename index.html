@@ -250,7 +250,47 @@ function LightenDarkenColor(num, amt) {
 	  }
 
 	  var playersColorsNum = 0;
-	  var playersColorsAll = 6;
+	  var playersColors = [
+		0xE80510,
+		0xBB05E8,
+		0x0532E8,
+		0xE88605,
+		0x10E805,
+		0x0598E8
+	  ];
+	  var playersColorsMap = {};
+	  function addMapColor(id)
+	  {
+			playersColorsMap[id] = {
+				color: playersColors[playersColorsNum],
+				num: playersColorsNum
+			};
+			
+			if(playersColorsNum + 1 < playersColors.length)
+				playersColorsNum++;
+			else
+				playersColorsNum = 0;
+	  }
+	  function removeMapColor(id)
+	  {
+		delete playersColorsMap[id];
+	  }
+	  var cellBounds = [];
+	  function drawCellBounds(i)
+	  {
+				console.log(i);
+				if(cellBounds[i] != null)
+					cellBounds[i].destroy();
+				
+				cellBounds[i] = game.add.graphics(0, 0);
+				if(map[i].owner == null)
+					cellBounds[i].lineStyle(1, 0xDDDDDD, 1);
+				else
+					cellBounds[i].lineStyle(2, playersColorsMap[map[i].owner].color, 1);
+
+				cellBounds[i].drawRect(map[i].x, map[i].y, map[i].width, map[i].height);
+				mapGroup.add(cellBounds[i]);
+	  }
 	  function drawMap()
 	  {
 		if(mapGroup != null)
@@ -318,19 +358,15 @@ function LightenDarkenColor(num, amt) {
 				{
 					var costText = game.add.text(map[i].x + map[i].width/2 - 23, map[i].y + map[i].height/2 - 10, map[i].cost, { fontSize: '20px', fill: '#000' });
 					mapGroup.add(costText);
-					costText.alpha = 0.45;
+					costText.alpha = 0.5;
 				}
-				
-				var line = game.add.graphics(0, 0);
-				line.lineStyle(1, 0xDDDDDD, 1);
-				line.drawRect(map[i].x, map[i].y, map[i].width, map[i].height);
-				mapGroup.add(line);
+
+				drawCellBounds(i);
 			
 				map[i].mapPlayers.forEach(function(gamer, index){
 					var newCord = counterPlayerCordMod(map[i], index);
 					
-					var color = playersColorsNum + 1 < playersColorsAll ? playersColorsNum++ : (playersColorsNum = 0);
-					playersCursor[gamer] = game.add.sprite(newCord.x, newCord.y, 'fishka_' + color);
+					playersCursor[gamer] = game.add.sprite(newCord.x, newCord.y, 'fishka_' + playersColorsMap[gamer].num);
 					playersCursor[gamer].x -= playersCursor[gamer].width / 2;
 					playersCursor[gamer].y -= playersCursor[gamer].height / 2;
 					mapGroup.add(playersCursor[gamer]);
@@ -396,6 +432,11 @@ function LightenDarkenColor(num, amt) {
 			
 			drawInventory();
 			drawOnline();
+			// detect color map
+			for(id in players)
+			{
+				addMapColor(id);
+			}
 			drawMap();
 			drawCardInfo();
 			
@@ -403,6 +444,7 @@ function LightenDarkenColor(num, amt) {
 				console.log('Player ' + data.player.id + ' join');
 				map = data.map.map;
 				players = data.map.players;
+				addMapColor(data.player.id);
 				drawMap();
 				drawOnline();
 			});
@@ -415,6 +457,7 @@ function LightenDarkenColor(num, amt) {
 					playersCursor[data.player.id].destroy();
 					delete playersCursor[data.player.id];
 				}
+				removeMapColor(data.player.id);
 				drawOnline();
 			});
 			
@@ -431,19 +474,24 @@ function LightenDarkenColor(num, amt) {
 			});
 			
 			socket.on('buycard', function(data){
-				players = data.players
+				players = data.players;
 				if(data.player.id == player.id)
 				{
 					player = data.player;
 				}
 				if(data.result)
 				{
-					if(player.inventory.length - drawInventoryAliginLength > 0)
-						drawInventoryAligin = player.inventory.length - drawInventoryAliginLength;
-					cardGroups.forEach(function(card){
-						card.visible = 1;
-					});
-						
+					if(data.player.id == player.id)
+					{
+						if(player.inventory.length - drawInventoryAliginLength > 0)
+							drawInventoryAligin = player.inventory.length - drawInventoryAliginLength;
+						cardGroups.forEach(function(card){
+							card.visible = 1;
+						});
+					}
+					
+					map[data.player.position] = data.cell;
+					drawCellBounds(data.player.position);
 					drawInventory();
 					drawOnline();
 					drawCardInfo();

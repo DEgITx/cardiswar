@@ -477,6 +477,7 @@ io.on('connection', function (socket)
 		{
 			player : map.players[socket.id],
 			players : map.players,
+			cell : map.map[map.players[socket.id].position],
 			result : result
 		}
 		);
