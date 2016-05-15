@@ -60,6 +60,7 @@ class PrisonCard extends Card
 		super();
 		this.stepskip = stepskip || 2;
 		this.image = 'images/cards/prison.png';
+		this.description = 'Добро пожаловать тюрячку. Вы сами знаете что сдесь делают. Вы пропускаете 2 хода (кликать нужно).';
 	}
 	
 	postStep(map, player, position)
@@ -216,8 +217,8 @@ class CardMap
 			return [];
 		}
 		
-		var roll = Math.floor((Math.random() * 6) + 1);
-		//var roll = 1;
+		//var roll = Math.floor((Math.random() * 6) + 1);
+		var roll = 1;
 		var currentPosition = this.players[player.id].position;
 		console.log('player ' + this.players[player.id].nick + ' roll: ' + roll);
 		var path = [];
@@ -332,6 +333,7 @@ class StartCard extends Card
 	{
 		super(image);
 		this.needFill = true;
+		this.description = 'Добро пожаловать на старт. За прохождение старта вы каждый раз получаете 10000';
 	}
 	
 	inStep(map, player, position)

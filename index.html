@@ -187,6 +187,42 @@ function LightenDarkenColor(num, amt) {
 		onlineGroupTextsLastLength = Object.keys(players).length;
 	  }
 	  
+	  var cardInfoGroup;
+	  function drawCardInfo()
+	  {
+		  if(cardInfoGroup != null)
+			{
+				cardInfoGroup.destroy();
+				cardInfoGroup = null;
+			}
+			cardInfoGroup = game.add.group();
+			cardInfoGroup.alpha = 0.7;
+			var graphics = game.add.graphics(game.world.width - 260, 350);
+			cardInfoGroup.add(graphics);
+			graphics.beginFill(0x000000, 1);
+			graphics.drawRoundedRect(0, 0, 250, 100, 25);
+			graphics.endFill();
+			
+			if(map[player.position].cost > 0)
+			{
+				var cardCost = game.add.text(game.world.width - 245, 364, "Эта карта стоит: " + map[player.position].cost, { fontSize: '18px', fill: '#fff' });
+				cardInfoGroup.add(cardCost);
+			}
+			
+				//if(map[player.position].owner != null)
+				//{
+				//	var cardOwner = game.add.text(game.world.width - 245, 400, "Её владелец: " + players[map[player.position].owner].nick, { fontSize: '18px', fill: '#fff' });
+				//	cardInfoGroup.add(cardOwner);
+				//}
+				if(map[player.position].description.length > 0)
+				{
+					var descText = game.add.text(game.world.width - 245, 390, map[player.position].description, { fontSize: '12px', fill: '#fff', wordWrap: true, wordWrapWidth: 245 });
+					cardInfoGroup.add(descText);
+				}
+			
+			
+	  }
+	  
 	  function counterPlayerCordModMain(x, y, width, height, length, index)
 	  {
 			var power = Math.ceil(Math.sqrt(length));
@@ -320,6 +356,7 @@ function LightenDarkenColor(num, amt) {
 			drawInventory();
 			drawOnline();
 			drawMap();
+			drawCardInfo();
 			
 			socket.on('joinplayer', function (data) {
 				console.log('Player ' + data.player.id + ' join');
@@ -362,6 +399,7 @@ function LightenDarkenColor(num, amt) {
 				{
 					drawInventory();
 					drawOnline();
+					drawCardInfo();
 				}
 			});
 	  });
@@ -467,6 +505,7 @@ function LightenDarkenColor(num, amt) {
 				{
 					drawInventory();
 					drawOnline();
+					drawCardInfo();
 					playerDoingMove = false;
 				}
 			}
