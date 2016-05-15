@@ -306,17 +306,30 @@ app.use('/phaser-input', express.static('node_modules/phaser-input/build'));
 var players = {};
 var map = new CardMap;
 
+
+class WhiteCard extends Card 
+{
+	constructor(image)
+	{
+		super(image);
+		this.needFill = true;
+	}
+}
+
+
+
 // Рисуем карту
-var startCard = new Card();
-startCard.needFill = true;
-map.append(startCard); // Старт
+map.append(new WhiteCard); // Старт
 var sunGroup = new CardGroup(0xD6D600, 'images/cards/sun.png', 'Это солнечный сет, несущий счатье и радость людям. Единственный минус, то что он слабенький.');
 map.append(new PurchaseCard(250, [100, 200, 250, 300, 350], sunGroup));
-map.append(new Card);
+map.append(new WhiteCard);
 map.append(new PurchaseCard(350, [200, 350, 500, 600, 750], sunGroup));
 map.append(new PurchaseCard(500, [300, 400, 550, 700, 900], sunGroup));
-
-
+var treeGroup = new CardGroup(0x74E30B, 'images/cards/tree.jpg', 'Древестный сет. Почувствуйте себя настоящим садоводом на поле боя.');
+map.append(new PurchaseCard(750, [500, 650, 800, 1000, 1100], treeGroup));
+map.append(new PurchaseCard(900, [700, 850, 900, 1200, 1400], treeGroup));
+map.append(new PurchaseCard(1000, [800, 950, 1100, 1300, 1500], treeGroup));
+map.append(new PrisonCard);
 
 io.on('connection', function (socket)
 {

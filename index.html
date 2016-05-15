@@ -215,24 +215,27 @@ function LightenDarkenColor(num, amt) {
 		mapGroup = game.add.group();
 		var promise = new Promise(function(resolve, reject) {
 			var loaderCounter = 0;
-			for(var i = 0; i < map.length; i++)
+			function cellImage(image, cell)
 			{
-				function cellImage(image, cell)
-				{
-					loaderCounter++;
-					loadTexture(image, function(){
-						var cardCoolImage = game.add.sprite(map[cell].x, map[cell].y, image);
-						cardCoolImage.width = map[cell].width;
-						cardCoolImage.height = map[cell].height;
-						mapGroup.add(cardCoolImage);
-						loaderCounter--;
-						if(loaderCounter == 0 && i == map.length)
-						{
-							resolve();
-						}
-					});
-				}
-				
+				loaderCounter++;
+				loadTexture(image, function(){
+					var cardCoolImage = game.add.sprite(map[cell].x, map[cell].y, image);
+					cardCoolImage.width = map[cell].width;
+					cardCoolImage.height = map[cell].height;
+					mapGroup.add(cardCoolImage);
+					
+					if(cell + 1 < map.length)
+						loadCell(cell + 1);
+					
+					loaderCounter--;
+					if(loaderCounter == 0)
+					{
+						resolve();
+					}
+				});
+			}
+			function loadCell(i)
+			{
 				if(map[i].needFill)
 				{
 					var fill = game.add.graphics(0, 0);
@@ -250,9 +253,16 @@ function LightenDarkenColor(num, amt) {
 				{
 					cellImage(map[i].group.image, i);
 				}
+				else if(i + 1 < map.length)
+				{
+					loadCell(i + 1);
+				}
+				else if(loaderCounter == 0)
+				{
+					resolve();
+				}
 			}
-			if(loaderCounter == 0)
-				resolve();
+			loadCell(0);
 		});
 		promise.then(function(){
 			playersColorsNum = 0;
@@ -262,7 +272,7 @@ function LightenDarkenColor(num, amt) {
 				{
 					var costText = game.add.text(map[i].x + map[i].width/2 - 23, map[i].y + map[i].height/2 - 10, map[i].cost, { fontSize: '20px', fill: '#000' });
 					mapGroup.add(costText);
-					costText.alpha = 0.45;
+					costText.alpha = 0.3;
 				}
 				
 				var line = game.add.graphics(0, 0);
