@@ -84,12 +84,15 @@ function LightenDarkenColor(num, amt) {
 				if(drawInventoryAliginLength > 0 && workAlignLength-- <= 0)
 					return;
 			
+				var visible = 1;
 				if(cardGroups[index] != null)
 				{
+					visible = cardGroups[index].visible;
 					cardGroups[index].destroy();
 					delete cardGroups[index];
 				}
 				var cardGroup = game.add.group();
+				cardGroup.visible = visible;
 				cardGroups[index] = cardGroup;
 				var cardImage = game.add.sprite(32, 32, 'card');
 				//cardGroup.create(32, 32, 'card');
