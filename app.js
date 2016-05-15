@@ -307,7 +307,7 @@ var players = {};
 var map = new CardMap;
 
 // Рисуем карту
-var startCard = new Card('images/cards/finish_flag.png');
+var startCard = new Card();
 startCard.needFill = true;
 map.append(startCard); // Старт
 var sunGroup = new CardGroup(0xD6D600, 'images/cards/sun.png', 'Это солнечный сет, несущий счатье и радость людям. Единственный минус, то что он слабенький.');
