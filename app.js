@@ -106,23 +106,37 @@ class PurchaseCard extends Card
 		this.groupEffect = 0;
 	}
 	
-	payPenality(culprit)
+	postStep(map, player, position)
 	{
-		if(culprit == this.owner)
+		if(this.owner == null || this.owner == player)
 		{
-			console.log('you own this card');
+			console.log('Nothing to pay');
 			return;
 		}
 		
 		if(this.penalty[this.currentPenalty] != null && this.penalty[this.currentPenalty] > 0)
 		{
-			culprit.money -= this.penalty[this.currentPenalty];
+			player.money -= this.penalty[this.currentPenalty];
 			this.owner.money += this.penalty[this.currentPenalty];
 		}
 		if(this.currentPenalty < this.penalty.length - 1)
 			this.currentPenalty++
 		else
 			this.currentPenalty = 0;
+		
+		// проигравшие
+		if(player.money <= 0)
+			map.losers.push(player);
+		if(this.owner.money <= 0)
+			map.losers.push(this.owner);
+	}
+	
+	preStep(map, player, position)
+	{
+		if(player.money <= 0)
+			return false;
+		
+		return true;
 	}
 	
 	toJSON()
@@ -147,6 +161,7 @@ class CardMap
 		this.players = {};
 		this.playersKeys = [];
 		this.currentTurn = 0;
+		this.losers = [];
 	}
 
 	append(card, position)
@@ -213,7 +228,13 @@ class CardMap
 	{
 		if(this.players[this.playersKeys[this.currentTurn]].id != player.id)
 		{
-			console.log('not player turn');
+			console.log('not player ' + player.nick + ' turn');
+			return [];
+		}
+		
+		if(this.losers.length > 0)
+		{
+			console.log('cant make step because of there are some losers');
 			return [];
 		}
 		
@@ -245,13 +266,7 @@ class CardMap
 		}
 		this.players[player.id].position = cell.id;
 		cell.mapPlayers[player.id] = player;
-		
-		// Выплата штрафа
-		if(cell instanceof PurchaseCard && cell.owner != null && cell.owner != player)
-		{
-			cell.payPenality(player);
-		}
-		
+
 		// Выпоняем действия карты после хода
 		cell.postStep(this, player, this.players[player.id].position);
 		
