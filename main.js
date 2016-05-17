@@ -179,7 +179,7 @@ window.addEventListener('DOMContentLoaded', function()
 				cardGroup.add(graphics);
 				graphics.beginFill(LightenDarkenColor(card.group.color, 140), 1);
 				graphics.drawRoundedRect(80, 70 + 580 + (i * 58), 530, 50, 20);
-				var penaltyText = game.add.text(135, 70 + 639 + (i * 58), (card.currentPenalty == i ? '> ' : '') + '����� ' + (i + 1) + ": " + penalty,
+				var penaltyText = game.add.text(135, 70 + 639 + (i * 58), (card.currentPenalty == i ? '> ' : '') + 'штраф ' + (i + 1) + ": " + penalty,
 				{
 					fontSize: '30px',
 					fill: '#000'
@@ -229,7 +229,7 @@ window.addEventListener('DOMContentLoaded', function()
 		var i = 0;
 		for (var id in players)
 		{
-			var text = (currentTurn != null && currentTurn.id == id ? '> ' : '') + players[id].nick + ' - ' + players[id].money + "$" + " - ����: " + players[id].inventory.length;
+			var text = (currentTurn != null && currentTurn.id == id ? '> ' : '') + players[id].nick + ' - ' + players[id].money + "$" + " - карт: " + players[id].inventory.length;
 			if (onlineGroupTexts[id] == null)
 			{
 				onlineGroupTexts[id] = game.add.text(game.world.width - 245, 50 + i * 40, text,
@@ -266,7 +266,7 @@ window.addEventListener('DOMContentLoaded', function()
 
 		if (map[player.position].cost > 0)
 		{
-			var cardCost = game.add.text(game.world.width - 245, 364, "��� ����� �����: " + map[player.position].cost,
+			var cardCost = game.add.text(game.world.width - 245, 364, "Эта карта стоит: " + map[player.position].cost,
 			{
 				fontSize: '18px',
 				fill: '#fff'
@@ -276,7 +276,7 @@ window.addEventListener('DOMContentLoaded', function()
 
 		//if(map[player.position].owner != null)
 		//{
-		//	var cardOwner = game.add.text(game.world.width - 245, 400, "Ÿ ��������: " + players[map[player.position].owner].nick, { fontSize: '18px', fill: '#fff' });
+		//	var cardOwner = game.add.text(game.world.width - 245, 400, "Её владелец: " + players[map[player.position].owner].nick, { fontSize: '18px', fill: '#fff' });
 		//	cardInfoGroup.add(cardOwner);
 		//}
 		if (map[player.position].description.length > 0)
@@ -692,7 +692,7 @@ window.addEventListener('DOMContentLoaded', function()
 				{
 					findMovePoint = true;
 					var point = playersCursor[id].movePoints[0];
-					// �������� ������������ ������� ��� ��������� ����� �� ��������
+					// Изменяем расположение курсора для последней точки на реальное
 					var movePoint = {
 						x: map[point].x + map[point].width / 2,
 						y: map[point].y + map[point].height / 2
@@ -750,7 +750,7 @@ window.addEventListener('DOMContentLoaded', function()
 					loading.animations.add('spin');
 					loading.animations.play('spin', 7, true);
 					loadingGroup.add(loading);
-					var loadingText = game.add.text(game.world.width - 550, 250, '������ ��������\n � ������� ������ ����',
+					var loadingText = game.add.text(game.world.width - 550, 250, 'Пикачу крутится\n и ожидает вашего хода',
 					{
 						fontSize: '20px',
 						fill: '#000'
