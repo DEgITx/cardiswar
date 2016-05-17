@@ -250,6 +250,13 @@ class CardMap
 			delete this.map[this.players[player.id].position].mapPlayers[player.id];
 		delete this.players[player.id];
 		this.playersKeys = Object.keys(this.players);
+		
+		var loserIndex = this.losers.indexOf(player);
+		if(loserIndex >= 0)
+		{
+			console.log('removing player from losser list');
+			this.losers.splice(loserIndex, 1);
+		}
 	}
 
 	makeStep(player)
