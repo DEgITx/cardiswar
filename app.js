@@ -124,11 +124,34 @@ class PurchaseCard extends Card
 		else
 			this.currentPenalty = 0;
 		
+		function canPlayerRehab(player)
+		{
+			var costSum = 0;
+			player.inventory.forEach(function(card, index){
+				if(card instanceof PurchaseCard)
+				{
+					costSum == card.cost;
+				}
+			});
+			return player.money + costSum > 0;
+		}
+		
 		// проигравшие
 		if(player.money <= 0)
-			map.losers.push(player);
+		{
+			if(canPlayerRehab(player))
+				map.losers.push(player);
+			else
+				map.removePlayer(player);
+		}
+			
 		if(this.owner.money <= 0)
-			map.losers.push(this.owner);
+		{
+			if(canPlayerRehab(this.owner))
+				map.losers.push(this.owner);
+			else
+				map.removePlayer(this.owner);
+		}
 	}
 	
 	preStep(map, player, position)
