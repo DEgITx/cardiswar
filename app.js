@@ -8,7 +8,7 @@ class Card
 {
 	constructor(image)
 	{
-		this.id = ++CARD_ID;
+		this.id = CARD_ID++;
 		this.nextCard = null;
 		this.prevCard = null;
 		this.mapPlayers = {};
@@ -283,6 +283,8 @@ class CardMap
 		player.money -= card.cost;
 		card.owner = player;
 		player.inventory.push(card);
+		console.log(card.id + " card bouth by player " + player.nick + " he spend " + card.cost + " money");
+		
 		if(card.group != null)
 		{
 			if(player.cardGroupMap[card.group.id] == null)
@@ -293,6 +295,41 @@ class CardMap
 			});
 		}
 		return true;
+	}
+	
+	sellCard(gamer, cardId)
+	{
+		var card = this.map[cardId];
+		var player = this.players[gamer.id];
+		var inventoryIndex = player.inventory.indexOf(card);
+		if(inventoryIndex < 0 || !(card instanceof Card) || card.owner != player)
+		{
+			console.log('Error on card selling');
+			return -1;
+		}
+		
+		player.money += card.cost;
+		card.owner = null;
+		player.inventory.splice(inventoryIndex, 1);
+		console.log(card.id + " card selled by player " + player.nick + " he got " + card.cost + " money");
+		
+		if(card.group != null)
+		{
+			card.groupEffect = 0;
+			if(player.cardGroupMap[card.group.id] != null)
+			{
+				var index = player.cardGroupMap[card.group.id].indexOf(card);
+				if(index >= 0)
+				{
+					console.log('reduce card power afer selling');
+					player.cardGroupMap[card.group.id].splice(index, 1);
+					player.cardGroupMap[card.group.id].forEach(function(card){
+						card.groupEffect = player.cardGroupMap[card.group.id].length;
+					});
+				}
+			}
+		}
+		return card.id;
 	}
 	
 }
@@ -479,6 +516,24 @@ io.on('connection', function (socket)
 			players : map.players,
 			cell : map.map[map.players[socket.id].position],
 			result : result
+		}
+		);
+	}
+	);
+	
+	socket.on('sellcard', function (data)
+	{
+		if (players[socket.id] == null)
+		{
+			return;
+		}
+		var cell = map.sellCard(players[socket.id], data.id);
+		io.sockets.emit('sellcard',
+		{
+			player : map.players[socket.id],
+			players : map.players,
+			cell : map.map[cell],
+			result : cell >= 0
 		}
 		);
 	}

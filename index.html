@@ -18,7 +18,7 @@
         }
     </style>
 <script>
-  var socket = io('http://draftup.org:8099');  
+  var socket = io('http://127.0.0.1:8099');  
   
   window.addEventListener('DOMContentLoaded', function(){
       var joined = false;
@@ -72,6 +72,7 @@ function LightenDarkenColor(num, amt) {
 	  var cardGroups = [];
 	  var drawInventoryAligin = 0;
 	  var drawInventoryAliginLength = 4;
+	  var focusedCard = null;
 	  function drawInventory(align, alignLength)
 	  {
 			drawInventoryAligin = align || drawInventoryAligin;
@@ -79,6 +80,10 @@ function LightenDarkenColor(num, amt) {
 			var workAlignLength = drawInventoryAliginLength;
 			moneyText.text = player.money + "$";
 			var oldCardX = 0;
+			cardGroups.forEach(function(card, index){
+				if(!(index in player.inventory))
+					card.destroy();
+			});
 			player.inventory.forEach(function(card, index){
 				if(drawInventoryAligin > 0 && index < drawInventoryAligin)
 					return;
@@ -101,11 +106,24 @@ function LightenDarkenColor(num, amt) {
 				//cardGroup.scale.set(0.4, 0.4);
 				
 				var graphics = game.add.graphics(45, 53);
-				cardGroup.add(graphics);
 				graphics.beginFill(card.group.color, 1);
 				graphics.drawRect(30, 30, 635, 925);
-				
 				cardGroup.add(cardImage);
+				cardGroup.add(graphics);
+				
+				cardImage.inputEnabled = true;
+				cardImage.events.onInputDown.add(function(){ 
+					focusedCard = card; 
+					player.inventory.forEach(function(card, index){
+						cardGroups[index].getBottom().loadTexture('card');
+					});
+					cardImage.loadTexture('card_shine');
+				}, this);
+				if(focusedCard != null && focusedCard.id == card.id)
+				{
+					focusedCard = card;
+					cardImage.loadTexture('card_shine');
+				}
 				
 				if(card.group.image.length > 0)
 				{
@@ -157,6 +175,17 @@ function LightenDarkenColor(num, amt) {
 					var penaltyText = game.add.text(135, 70 + 639 + (i*58), (card.currentPenalty == i ? '> ' : '') + 'штраф ' + (i+1) + ": " + penalty, { fontSize: '30px', fill: '#000' });
 					cardGroup.add(penaltyText);
 				});
+				
+				var sellCardImage = game.add.sprite(600, 900, 'sell');
+				sellCardImage.alpha = 0.7;
+				sellCardImage.width = 128;
+				sellCardImage.height = 128;
+				sellCardImage.inputEnabled = true;
+				sellCardImage.events.onInputDown.add(function(){ 
+					socket.emit('sellcard', card);
+				}, this);
+				cardGroup.add(sellCardImage);
+				
 				
 				cardGroup.y = game.world.height - cardGroup.height;
 				cardGroup.x = oldCardX + cardGroup.width;
@@ -249,7 +278,6 @@ function LightenDarkenColor(num, amt) {
 	  {
 			if(index.id != null)
 				index = card.mapPlayers.indexOf(index.id);
-			//alert(card.mapPlayers.length + ":" + index);
 			return counterPlayerCordModMain(card.x, card.y, card.width, card.height, card.mapPlayers.length, index);
 	  }
 
@@ -502,6 +530,30 @@ function LightenDarkenColor(num, amt) {
 					drawCellBounds(data.player.position);
 					drawInventory();
 					drawOnline();
+				}
+			});
+			
+			socket.on('sellcard', function(data){
+				players = data.players;
+				if(data.player.id == player.id)
+				{
+					player = data.player;
+				}
+				if(data.result)
+				{
+					if(data.player.id == player.id)
+					{
+						if(player.inventory.length - drawInventoryAliginLength > 0)
+							drawInventoryAligin = player.inventory.length - drawInventoryAliginLength;
+						cardGroups.forEach(function(card){
+							card.visible = 1;
+						});
+					}
+					
+					map[data.cell.id] = data.cell;
+					drawCellBounds(data.cell.id);
+					drawInventory();
+					drawOnline();
 					drawCardInfo();
 				}
 			});
@@ -512,7 +564,8 @@ function LightenDarkenColor(num, amt) {
 			game.load.spritesheet('loading', 'images/pikachu.png', 232, 227, 7);
 			
 			game.load.image('card', 'images/card.png');
-			game.load.image('card_in', 'images/cards/sun.png');
+			game.load.image('card_shine', 'images/card_shine.png');
+			game.load.image('sell', 'images/sell.png');
 			
 			game.load.image('next', 'images/next.png');
 			game.load.image('buy', 'images/buy.png');
