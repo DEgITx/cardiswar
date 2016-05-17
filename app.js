@@ -317,7 +317,7 @@ class CardMap
 		var card = this.map[cardId];
 		var player = this.players[gamer.id];
 		var inventoryIndex = player.inventory.indexOf(card);
-		if(inventoryIndex < 0 || !(card instanceof Card) || card.owner != player)
+		if(inventoryIndex < 0 || !(card instanceof PurchaseCard) || card.owner != player)
 		{
 			console.log('Error on card selling');
 			return -1;
@@ -327,6 +327,16 @@ class CardMap
 		card.owner = null;
 		player.inventory.splice(inventoryIndex, 1);
 		console.log(card.id + " card selled by player " + player.nick + " he got " + card.cost + " money");
+		
+		if(player.money > 0)
+		{
+			var loserIndex = this.losers.indexOf(player);
+			if(loserIndex >= 0)
+			{
+				console.log('removing player from losser list');
+				this.losers.splice(loserIndex, 1);
+			}
+		}			
 		
 		if(card.group != null)
 		{
