@@ -12,48 +12,49 @@ class Card
 		this.nextCard = null;
 		this.prevCard = null;
 		this.mapPlayers = {};
-		
+
 		this.x = 50;
 		this.y = 50;
 		this.height = 70;
 		this.width = 70;
-		
+
 		this.image = image || '';
 		this.needFill = false;
 		this.fillColor = 0xFFFFFF;
-		
+
 		this.text = '';
 		this.description = '';
 	}
 
 	toJSON()
 	{
-		var obj = Object.assign({}, this);
+		var obj = Object.assign(
+		{}, this);
 		obj.nextCard = null;
 		obj.prevCard = null;
 		obj.mapPlayers = [];
-		for(var id in this.mapPlayers)
+		for (var id in this.mapPlayers)
 			obj.mapPlayers.push(id);
 		return obj;
 	}
-	
+
 	postStep(map, player, position)
 	{
-		
+
 	}
-	
+
 	preStep(map, player, position)
 	{
 		return true;
 	}
-	
+
 	inStep(map, player, position)
 	{
-		
+
 	}
 }
 
-class PrisonCard extends Card 
+class PrisonCard extends Card
 {
 	constructor(stepskip)
 	{
@@ -62,17 +63,17 @@ class PrisonCard extends Card
 		this.image = 'images/cards/prison.png';
 		this.description = 'Добро пожаловать тюрячку. Вы сами знаете что сдесь делают. Вы пропускаете 2 хода (кликать нужно).';
 	}
-	
+
 	postStep(map, player, position)
 	{
 		player.stepskip = this.stepskip;
 	}
-	
+
 	preStep(map, player, position)
 	{
 		// пропуск хода
 		console.log('Player ' + player.nick + "in prison left: " + player.stepskip + ' stepskips');
-		if(player.stepskip > 0)
+		if (player.stepskip > 0)
 		{
 			player.stepskip--;
 			return false;
@@ -82,7 +83,8 @@ class PrisonCard extends Card
 }
 
 var CARD_GROUP_ID = 0;
-class CardGroup {
+class CardGroup
+{
 	constructor(color, image, text)
 	{
 		this.id = ++CARD_GROUP_ID;
@@ -93,7 +95,7 @@ class CardGroup {
 	}
 }
 
-class PurchaseCard extends Card 
+class PurchaseCard extends Card
 {
 	constructor(cost, penalty, group)
 	{
@@ -105,72 +107,74 @@ class PurchaseCard extends Card
 		this.group = group || null;
 		this.groupEffect = 0;
 	}
-	
+
 	postStep(map, player, position)
 	{
-		if(this.owner == null || this.owner == player)
+		if (this.owner == null || this.owner == player)
 		{
 			console.log('Nothing to pay');
 			return;
 		}
-		
-		if(this.penalty[this.currentPenalty] != null && this.penalty[this.currentPenalty] > 0)
+
+		if (this.penalty[this.currentPenalty] != null && this.penalty[this.currentPenalty] > 0)
 		{
 			player.money -= this.penalty[this.currentPenalty];
 			this.owner.money += this.penalty[this.currentPenalty];
 		}
-		if(this.currentPenalty < this.penalty.length - 1)
+		if (this.currentPenalty < this.penalty.length - 1)
 			this.currentPenalty++
-		else
-			this.currentPenalty = 0;
-		
+			else
+				this.currentPenalty = 0;
+
 		function canPlayerRehab(player)
 		{
 			var costSum = 0;
-			player.inventory.forEach(function(card, index){
-				if(card instanceof PurchaseCard)
+			player.inventory.forEach(function(card, index)
+			{
+				if (card instanceof PurchaseCard)
 				{
 					costSum == card.cost;
 				}
 			});
 			return player.money + costSum > 0;
 		}
-		
+
 		// проигравшие
-		if(player.money <= 0)
+		if (player.money <= 0)
 		{
-			if(canPlayerRehab(player))
+			if (canPlayerRehab(player))
 				map.losers.push(player);
 			else
 				map.removePlayer(player);
 		}
-			
-		if(this.owner.money <= 0)
+
+		if (this.owner.money <= 0)
 		{
-			if(canPlayerRehab(this.owner))
+			if (canPlayerRehab(this.owner))
 				map.losers.push(this.owner);
 			else
 				map.removePlayer(this.owner);
 		}
 	}
-	
+
 	preStep(map, player, position)
 	{
-		if(player.money <= 0)
+		if (player.money <= 0)
 			return false;
-		
+
 		return true;
 	}
-	
+
 	toJSON()
 	{
-		var obj = Object.assign({}, this);
+		var obj = Object.assign(
+		{}, this);
 		obj.nextCard = null;
 		obj.prevCard = null;
-		if(obj.owner != null)
+		if (obj.owner != null)
 			obj.owner = obj.owner.id;
 		obj.mapPlayers = [];
-		for(var id in this.mapPlayers)
+		for (var id in this.mapPlayers)
 			obj.mapPlayers.push(id);
 		return obj;
 	}
@@ -206,22 +210,22 @@ class CardMap
 		{
 			switch (position)
 			{
-			case CARD_TOP:
-				card.x = this.map[this.map.length - 1].x;
-				card.y = this.map[this.map.length - 1].y - card.height;
-				break;
-			case CARD_RIGHT:
-				card.x = this.map[this.map.length - 1].x + this.map[this.map.length - 1].width;
-				card.y = this.map[this.map.length - 1].y;
-				break;
-			case CARD_BOTTOM:
-				card.x = this.map[this.map.length - 1].x;
-				card.y = this.map[this.map.length - 1].y + this.map[this.map.length - 1].height;
-				break;
-			case CARD_LEFT:
-				card.x = this.map[this.map.length - 1].x - card.width;
-				card.y = this.map[this.map.length - 1].y;
-				break;
+				case CARD_TOP:
+					card.x = this.map[this.map.length - 1].x;
+					card.y = this.map[this.map.length - 1].y - card.height;
+					break;
+				case CARD_RIGHT:
+					card.x = this.map[this.map.length - 1].x + this.map[this.map.length - 1].width;
+					card.y = this.map[this.map.length - 1].y;
+					break;
+				case CARD_BOTTOM:
+					card.x = this.map[this.map.length - 1].x;
+					card.y = this.map[this.map.length - 1].y + this.map[this.map.length - 1].height;
+					break;
+				case CARD_LEFT:
+					card.x = this.map[this.map.length - 1].x - card.width;
+					card.y = this.map[this.map.length - 1].y;
+					break;
 			}
 		}
 		card.id = this.map.length;
@@ -235,13 +239,14 @@ class CardMap
 		this.map[0].mapPlayers[player.id] = player;
 		this.playersKeys = Object.keys(this.players);
 	}
-	
+
 	removePlayer(player)
 	{
-		player.inventory.forEach(function(card){
+		player.inventory.forEach(function(card)
+		{
 			card.owner = null;
 		});
-		if(this.players[player.id] != null)
+		if (this.players[player.id] != null)
 			delete this.map[this.players[player.id].position].mapPlayers[player.id];
 		delete this.players[player.id];
 		this.playersKeys = Object.keys(this.players);
@@ -249,37 +254,37 @@ class CardMap
 
 	makeStep(player)
 	{
-		if(this.players[this.playersKeys[this.currentTurn]].id != player.id)
+		if (this.players[this.playersKeys[this.currentTurn]].id != player.id)
 		{
 			console.log('not player ' + player.nick + ' turn');
 			return [];
 		}
-		
-		if(this.losers.length > 0)
+
+		if (this.losers.length > 0)
 		{
 			console.log('cant make step because of there are some losers');
 			return [];
 		}
-		
+
 		var roll = Math.floor((Math.random() * 6) + 1);
 		//var roll = 1;
 		var currentPosition = this.players[player.id].position;
 		console.log('player ' + this.players[player.id].nick + ' roll: ' + roll);
 		var path = [];
 		var cell = this.map[currentPosition];
-		path.push(cell.id);		
+		path.push(cell.id);
 
-		if(this.currentTurn < this.playersKeys.length - 1)
+		if (this.currentTurn < this.playersKeys.length - 1)
 			this.currentTurn++;
 		else
 			this.currentTurn = 0;
-		
+
 		// Выпоняем действия карты перед ходом
-		if(!cell.preStep(this, player, this.players[player.id].position))
+		if (!cell.preStep(this, player, this.players[player.id].position))
 		{
 			return path;
 		}
-		
+
 		delete cell.mapPlayers[player.id];
 		while (roll-- > 0)
 		{
@@ -292,86 +297,88 @@ class CardMap
 
 		// Выпоняем действия карты после хода
 		cell.postStep(this, player, this.players[player.id].position);
-		
+
 		return path;
 	}
-	
+
 	buyCard(player)
 	{
 		var currentPosition = this.players[player.id].position;
 		var card = this.map[currentPosition];
-		if(!(card instanceof PurchaseCard))
+		if (!(card instanceof PurchaseCard))
 		{
 			console.log('this is not pushase card');
 			return false;
 		}
-		
-		if(player.money < card.cost)
+
+		if (player.money < card.cost)
 		{
 			console.log('too high cost for this card');
 			return false;
 		}
-		
-		if(card.owner != null)
+
+		if (card.owner != null)
 		{
 			console.log('card already owned');
 			return false;
 		}
-		
+
 		player.money -= card.cost;
 		card.owner = player;
 		player.inventory.push(card);
 		console.log(card.id + " card bouth by player " + player.nick + " he spend " + card.cost + " money");
-		
-		if(card.group != null)
+
+		if (card.group != null)
 		{
-			if(player.cardGroupMap[card.group.id] == null)
+			if (player.cardGroupMap[card.group.id] == null)
 				player.cardGroupMap[card.group.id] = [];
 			player.cardGroupMap[card.group.id].push(card);
-			player.cardGroupMap[card.group.id].forEach(function(card){
+			player.cardGroupMap[card.group.id].forEach(function(card)
+			{
 				card.groupEffect = player.cardGroupMap[card.group.id].length;
 			});
 		}
 		return true;
 	}
-	
+
 	sellCard(gamer, cardId)
 	{
 		var card = this.map[cardId];
 		var player = this.players[gamer.id];
 		var inventoryIndex = player.inventory.indexOf(card);
-		if(inventoryIndex < 0 || !(card instanceof PurchaseCard) || card.owner != player)
+		if (inventoryIndex < 0 || !(card instanceof PurchaseCard) || card.owner != player)
 		{
 			console.log('Error on card selling');
 			return -1;
 		}
-		
+
 		player.money += card.cost;
 		card.owner = null;
 		player.inventory.splice(inventoryIndex, 1);
 		console.log(card.id + " card selled by player " + player.nick + " he got " + card.cost + " money");
-		
-		if(player.money > 0)
+
+		if (player.money > 0)
 		{
 			var loserIndex = this.losers.indexOf(player);
-			if(loserIndex >= 0)
+			if (loserIndex >= 0)
 			{
 				console.log('removing player from losser list');
 				this.losers.splice(loserIndex, 1);
 			}
-		}			
-		
-		if(card.group != null)
+		}
+
+		if (card.group != null)
 		{
 			card.groupEffect = 0;
-			if(player.cardGroupMap[card.group.id] != null)
+			if (player.cardGroupMap[card.group.id] != null)
 			{
 				var index = player.cardGroupMap[card.group.id].indexOf(card);
-				if(index >= 0)
+				if (index >= 0)
 				{
 					console.log('reduce card power afer selling');
 					player.cardGroupMap[card.group.id].splice(index, 1);
-					player.cardGroupMap[card.group.id].forEach(function(card){
+					player.cardGroupMap[card.group.id].forEach(function(card)
+					{
 						card.groupEffect = player.cardGroupMap[card.group.id].length;
 					});
 				}
@@ -379,7 +386,7 @@ class CardMap
 		}
 		return card.id;
 	}
-	
+
 }
 
 var express = require('express');
@@ -389,11 +396,10 @@ var io = require('socket.io')(server);
 
 server.listen(8099);
 
-app.get('/', function (req, res)
+app.get('/', function(req, res)
 {
 	res.sendfile(__dirname + '/index.html');
-}
-);
+});
 
 app.use(express.static('public'));
 app.use('/phaser', express.static('node_modules/phaser/build'));
@@ -403,7 +409,7 @@ var players = {};
 var map = new CardMap;
 
 
-class WhiteCard extends Card 
+class WhiteCard extends Card
 {
 	constructor(image)
 	{
@@ -412,7 +418,7 @@ class WhiteCard extends Card
 	}
 }
 
-class StartCard extends Card 
+class StartCard extends Card
 {
 	constructor(image)
 	{
@@ -420,7 +426,7 @@ class StartCard extends Card
 		this.needFill = true;
 		this.description = 'Добро пожаловать на старт. За прохождение старта вы каждый раз получаете 10000';
 	}
-	
+
 	inStep(map, player, position)
 	{
 		player.money += 10000;
@@ -485,34 +491,32 @@ map.append(new WhiteCard, CARD_TOP);
 map.append(new PurchaseCard(25000, [20000, 25000, 30000, 35000, 40000], darknessGroup), CARD_TOP);
 
 
-io.on('connection', function (socket)
+io.on('connection', function(socket)
 {
 	// Добавляем нового игрока
-	players[socket.id] =
-	{
-		id : socket.id,
-		money : 20000,
+	players[socket.id] = {
+		id: socket.id,
+		money: 20000,
 		inventory: [],
-		stepskip : 0,
-		cardGroupMap: {},
+		stepskip: 0,
+		cardGroupMap:
+		{},
 		nick: '',
 	};
 	console.log('player connected with id: ' + socket.id);
 
-	socket.on('disconnect', function ()
+	socket.on('disconnect', function()
 	{
 		socket.broadcast.emit('leftplayer',
 		{
-			player : players[socket.id]
-		}
-		);
+			player: players[socket.id]
+		});
 		map.removePlayer(players[socket.id])
 		delete players[socket.id];
 		console.log('player left with id: ' + socket.id);
-	}
-	);
-	
-	socket.on('join', function (data)
+	});
+
+	socket.on('join', function(data)
 	{
 		players[socket.id].nick = data.nick;
 		map.addPlayer(players[socket.id]);
@@ -520,20 +524,17 @@ io.on('connection', function (socket)
 		console.log(map);
 		socket.emit('join',
 		{
-			player : players[socket.id],
+			player: players[socket.id],
 			map: map
-		}
-		);
+		});
 		socket.broadcast.emit('joinplayer',
 		{
-			player : players[socket.id],
+			player: players[socket.id],
 			map: map
-		}
-		);
-	}
-	);
-	
-	socket.on('makestep', function (data)
+		});
+	});
+
+	socket.on('makestep', function(data)
 	{
 		if (players[socket.id] == null)
 		{
@@ -542,16 +543,14 @@ io.on('connection', function (socket)
 		var path = map.makeStep(players[socket.id]);
 		io.sockets.emit('makestep',
 		{
-			player : players[socket.id],
-			map : map,
-			path : path,
-			turn : map.players[map.playersKeys[map.currentTurn]],
-		}
-		);
-	}
-	);
-	
-	socket.on('buycard', function (data)
+			player: players[socket.id],
+			map: map,
+			path: path,
+			turn: map.players[map.playersKeys[map.currentTurn]],
+		});
+	});
+
+	socket.on('buycard', function(data)
 	{
 		if (players[socket.id] == null)
 		{
@@ -560,16 +559,14 @@ io.on('connection', function (socket)
 		var result = map.buyCard(players[socket.id]);
 		io.sockets.emit('buycard',
 		{
-			player : map.players[socket.id],
-			players : map.players,
-			cell : map.map[map.players[socket.id].position],
-			result : result
-		}
-		);
-	}
-	);
-	
-	socket.on('sellcard', function (data)
+			player: map.players[socket.id],
+			players: map.players,
+			cell: map.map[map.players[socket.id].position],
+			result: result
+		});
+	});
+
+	socket.on('sellcard', function(data)
 	{
 		if (players[socket.id] == null)
 		{
@@ -578,14 +575,11 @@ io.on('connection', function (socket)
 		var cell = map.sellCard(players[socket.id], data.id);
 		io.sockets.emit('sellcard',
 		{
-			player : map.players[socket.id],
-			players : map.players,
-			cell : map.map[cell],
-			result : cell >= 0
-		}
-		);
-	}
-	);
+			player: map.players[socket.id],
+			players: map.players,
+			cell: map.map[cell],
+			result: cell >= 0
+		});
+	});
 
-}
-);
+});
