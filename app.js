@@ -133,7 +133,7 @@ class PurchaseCard extends Card
 			{
 				if (card instanceof PurchaseCard)
 				{
-					costSum == card.cost;
+					costSum += card.cost;
 				}
 			});
 			return player.money + costSum > 0;
@@ -147,8 +147,8 @@ class PurchaseCard extends Card
 				map.losers.push(player);
 				console.log('adding player ' + player.nick + ' to losers list');
 			}
-			else
-				map.removePlayer(player);
+			//else
+			//	map.removePlayer(player);
 		}
 
 		if (this.owner.money <= 0)
@@ -158,8 +158,8 @@ class PurchaseCard extends Card
 				map.losers.push(this.owner);
 				console.log('adding player ' + this.owner.nick + ' to losers list');
 			}
-			else
-				map.removePlayer(this.owner);
+			//else
+			//	map.removePlayer(this.owner);
 		}
 	}
 
@@ -256,6 +256,11 @@ class CardMap
 			delete this.map[this.players[player.id].position].mapPlayers[player.id];
 		delete this.players[player.id];
 		this.playersKeys = Object.keys(this.players);
+		if (this.currentTurn > this.playersKeys.length - 1)
+		{
+			console.log('returning turn to 0');
+			this.currentTurn = 0;
+		}
 
 		var loserIndex = this.losers.indexOf(player);
 		if (loserIndex >= 0)
@@ -263,6 +268,7 @@ class CardMap
 			console.log('removing player from losser list');
 			this.losers.splice(loserIndex, 1);
 		}
+		console.log('removed player ' + player.nick + ' from game');
 	}
 
 	makeStep(player)
@@ -561,6 +567,14 @@ io.on('connection', function(socket)
 			path: path,
 			turn: map.players[map.playersKeys[map.currentTurn]],
 		});
+		if (map.players[socket.id] == null)
+		{
+			console.log('lose event for player ' + players[socket.id].nick);
+			io.sockets.emit('lose',
+			{
+				player: players[socket.id]
+			});
+		}
 	});
 
 	socket.on('buycard', function(data)
