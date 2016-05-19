@@ -10,7 +10,8 @@ window.addEventListener('DOMContentLoaded', function()
 	var currentTurn = null;
 	var playersCursor = {};
 	var mapGroup = null;
-	var loadingGroup = null
+	var loadingGroup = null;
+	var freezeGamer = false;
 	var game = new Phaser.Game(window.innerWidth, window.innerHeight, Phaser.AUTO, '',
 	{
 		preload: preload,
@@ -54,6 +55,34 @@ window.addEventListener('DOMContentLoaded', function()
 		{
 			callback();
 		}
+	}
+
+	var freezeGroup = null;
+
+	function drawFreeze()
+	{
+		if (freezeGroup != null)
+		{
+			freezeGroup.destroy();
+			freezeGroup = null;
+		}
+
+		if (!freezeGamer)
+			return;
+
+		freezeGroup = game.add.group();
+
+		var freezeImage = game.add.sprite(game.world.centerX, game.world.centerY, 'freeze');
+		freezeImage.x -= freezeImage.width / 2;
+		freezeImage.y -= freezeImage.height / 2;
+		freezeGroup.add(freezeImage);
+
+		var freezeText = game.add.text(freezeImage.x, freezeImage.y + freezeImage.height, "Мы заморозили игру\n в ожидании того,\n что один из игроков разберется\n со своим отрицательным балансом.",
+		{
+			fontSize: '25px',
+			fill: '#000',
+		});
+		freezeGroup.add(freezeText);
 	}
 
 	var cardGroups = [];
@@ -460,6 +489,9 @@ window.addEventListener('DOMContentLoaded', function()
 
 		stepButton = game.add.button(game.world.width - 100, game.world.height - 100, 'next', function()
 		{
+			if (freezeGamer)
+				return;
+
 			if (!playerDoingMove)
 				socket.emit('makestep');
 		}, this, 2, 1, 0);
@@ -468,6 +500,9 @@ window.addEventListener('DOMContentLoaded', function()
 
 		buyButton = game.add.button(game.world.width - 180, game.world.height - 100, 'buy', function()
 		{
+			if (freezeGamer)
+				return;
+
 			socket.emit('buycard');
 		}, this, 2, 1, 0);
 		buyButton.width = 80;
@@ -555,6 +590,10 @@ window.addEventListener('DOMContentLoaded', function()
 			{
 				player = data.player;
 			}
+			if (data.map.losers.length > 0)
+			{
+				freezeGamer = true;
+			}
 
 			playersCursor[data.player.id].movePoints = data.path;
 			currentTurn = data.turn;
@@ -599,6 +638,11 @@ window.addEventListener('DOMContentLoaded', function()
 			{
 				player = data.player;
 			}
+			if (freezeGamer && data.losers.length == 0)
+			{
+				freezeGamer = false;
+				drawFreeze();
+			}
 			if (data.result)
 			{
 				if (data.player.id == player.id)
@@ -624,6 +668,7 @@ window.addEventListener('DOMContentLoaded', function()
 	{
 		game.load.image('background', 'images/background.jpg');
 		game.load.spritesheet('loading', 'images/pikachu.png', 232, 227, 7);
+		game.load.image('freeze', 'images/freeze.png');
 
 		game.load.image('card', 'images/card.png');
 		game.load.image('card_shine', 'images/card_shine.png');
@@ -756,6 +801,11 @@ window.addEventListener('DOMContentLoaded', function()
 						fill: '#000'
 					});
 					loadingGroup.add(loadingText);
+				}
+
+				if (freezeGamer)
+				{
+					drawFreeze();
 				}
 			}
 		}

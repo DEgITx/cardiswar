@@ -143,7 +143,10 @@ class PurchaseCard extends Card
 		if (player.money <= 0)
 		{
 			if (canPlayerRehab(player))
+			{
 				map.losers.push(player);
+				console.log('adding player ' + player.nick + ' to losers list');
+			}
 			else
 				map.removePlayer(player);
 		}
@@ -151,7 +154,10 @@ class PurchaseCard extends Card
 		if (this.owner.money <= 0)
 		{
 			if (canPlayerRehab(this.owner))
+			{
 				map.losers.push(this.owner);
+				console.log('adding player ' + this.owner.nick + ' to losers list');
+			}
 			else
 				map.removePlayer(this.owner);
 		}
@@ -250,9 +256,9 @@ class CardMap
 			delete this.map[this.players[player.id].position].mapPlayers[player.id];
 		delete this.players[player.id];
 		this.playersKeys = Object.keys(this.players);
-		
+
 		var loserIndex = this.losers.indexOf(player);
-		if(loserIndex >= 0)
+		if (loserIndex >= 0)
 		{
 			console.log('removing player from losser list');
 			this.losers.splice(loserIndex, 1);
@@ -585,7 +591,8 @@ io.on('connection', function(socket)
 			player: map.players[socket.id],
 			players: map.players,
 			cell: map.map[cell],
-			result: cell >= 0
+			result: cell >= 0,
+			losers: map.losers,
 		});
 	});
 
