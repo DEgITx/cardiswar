@@ -38,7 +38,7 @@ class Card
 		return obj;
 	}
 
-	postStep(map, player, position)
+	postStep(map, player, position, path)
 	{
 
 	}
@@ -64,7 +64,7 @@ class PrisonCard extends Card
 		this.description = 'Добро пожаловать тюрячку. Вы сами знаете что сдесь делают. Вы пропускаете 2 хода (кликать нужно).';
 	}
 
-	postStep(map, player, position)
+	postStep(map, player, position, path)
 	{
 		player.stepskip = this.stepskip;
 	}
@@ -108,7 +108,7 @@ class PurchaseCard extends Card
 		this.groupEffect = 0;
 	}
 
-	postStep(map, player, position)
+	postStep(map, player, position, path)
 	{
 		if (this.owner == null || this.owner == player)
 		{
@@ -316,7 +316,7 @@ class CardMap
 		cell.mapPlayers[player.id] = player;
 
 		// Выпоняем действия карты после хода
-		cell.postStep(this, player, this.players[player.id].position);
+		cell.postStep(this, player, this.players[player.id].position, path);
 
 		return path;
 	}
@@ -453,6 +453,33 @@ class StartCard extends Card
 	}
 }
 
+class PortalCard extends Card
+{
+	constructor(image)
+	{
+		super(image);
+		this.image = 'images/cards/portal.png';
+		this.needFill = true;
+		this.portalPoint = -1;
+	}
+
+	setPortalDestination(card)
+	{
+		this.portalPoint = card.id;
+	}
+
+	postStep(map, player, position, path)
+	{
+		if (this.portalPoint > 0)
+		{
+			map.players[player.id].position = this.portalPoint;
+			delete this.mapPlayers[player.id];
+			map.map[this.portalPoint].mapPlayers[player.id] = player;
+			path.push(this.portalPoint);
+		}
+	}
+}
+
 // Рисуем карту
 map.append(new StartCard); // Старт
 var sunGroup = new CardGroup(0xD6D600, 'images/cards/sun.png', 'Это солнечный сет, несущий счатье и радость людям. Единственный минус, то что он слабенький.');
@@ -462,6 +489,8 @@ map.append(new PurchaseCard(350, [200, 350, 500, 600, 750], sunGroup));
 map.append(new PurchaseCard(500, [300, 400, 550, 700, 900], sunGroup));
 var treeGroup = new CardGroup(0x74E30B, 'images/cards/tree.jpg', 'Древестный сет. Почувствуйте себя настоящим садоводом на поле боя.');
 map.append(new PurchaseCard(750, [500, 650, 800, 1000, 1100], treeGroup));
+var portal_1 = new PortalCard;
+map.append(portal_1);
 map.append(new PurchaseCard(900, [700, 850, 900, 1200, 1400], treeGroup));
 map.append(new PurchaseCard(1000, [800, 950, 1100, 1300, 1500], treeGroup));
 map.append(new PrisonCard);
@@ -499,6 +528,9 @@ map.append(new PurchaseCard(7200, [6500, 6600, 6900, 7800, 9000], electricityGro
 map.append(new PurchaseCard(8000, [6300, 8000, 9000, 10000, 11000], electricityGroup), CARD_LEFT);
 map.append(new WhiteCard, CARD_LEFT);
 map.append(new PurchaseCard(9500, [8000, 9500, 11000, 11500, 12000], electricityGroup), CARD_LEFT);
+var pure_1 = new WhiteCard;
+portal_1.setPortalDestination(pure_1);
+map.append(pure_1, CARD_LEFT);
 map.append(new PurchaseCard(10000, [8500, 10000, 12500, 14000, 15000], electricityGroup), CARD_LEFT);
 map.append(new PrisonCard, CARD_LEFT);
 var inyanGroup = new CardGroup(0xDB3B9E, 'images/cards/inyan.jpg', 'Добро и зло - эти 2 карты неразлучны, до того момента пока 2 идиота их не купят, каждый по одной.');
