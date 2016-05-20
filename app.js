@@ -321,6 +321,25 @@ class CardMap
 		return path;
 	}
 
+	addPlayerCard(player, card)
+	{
+		card.owner = player;
+		player.inventory.push(card);
+		console.log(card.id + " card bouth by player " + player.nick + " he spend " + card.cost + " money");
+
+		if (card.group != null)
+		{
+			if (player.cardGroupMap[card.group.id] == null)
+				player.cardGroupMap[card.group.id] = [];
+			player.cardGroupMap[card.group.id].push(card);
+			player.cardGroupMap[card.group.id].forEach(function(card)
+			{
+				card.groupEffect = player.cardGroupMap[card.group.id].length;
+			});
+		}
+		return true;
+	}
+
 	buyCard(player)
 	{
 		var currentPosition = this.players[player.id].position;
@@ -344,49 +363,18 @@ class CardMap
 		}
 
 		player.money -= card.cost;
-		card.owner = player;
-		player.inventory.push(card);
-		console.log(card.id + " card bouth by player " + player.nick + " he spend " + card.cost + " money");
-
-		if (card.group != null)
-		{
-			if (player.cardGroupMap[card.group.id] == null)
-				player.cardGroupMap[card.group.id] = [];
-			player.cardGroupMap[card.group.id].push(card);
-			player.cardGroupMap[card.group.id].forEach(function(card)
-			{
-				card.groupEffect = player.cardGroupMap[card.group.id].length;
-			});
-		}
+		this.addPlayerCard(player, card);
 		return true;
 	}
 
-	sellCard(gamer, cardId)
+	removePlayerCard(player, card)
 	{
-		var card = this.map[cardId];
-		var player = this.players[gamer.id];
 		var inventoryIndex = player.inventory.indexOf(card);
-		if (inventoryIndex < 0 || !(card instanceof PurchaseCard) || card.owner != player)
-		{
-			console.log('Error on card selling');
-			return -1;
-		}
+		if (inventoryIndex < 0)
+			return false;
 
-		player.money += card.cost;
 		card.owner = null;
 		player.inventory.splice(inventoryIndex, 1);
-		console.log(card.id + " card selled by player " + player.nick + " he got " + card.cost + " money");
-
-		if (player.money > 0)
-		{
-			var loserIndex = this.losers.indexOf(player);
-			if (loserIndex >= 0)
-			{
-				console.log('removing player from losser list');
-				this.losers.splice(loserIndex, 1);
-			}
-		}
-
 		if (card.group != null)
 		{
 			card.groupEffect = 0;
@@ -404,6 +392,37 @@ class CardMap
 				}
 			}
 		}
+
+		return true;
+	}
+
+	sellCard(gamer, cardId)
+	{
+		var card = this.map[cardId];
+		var player = this.players[gamer.id];
+
+		if (!(card instanceof PurchaseCard) || card.owner != player)
+		{
+			console.log('Error on card selling');
+			return -1;
+		}
+
+		if (!this.removePlayerCard(player, card))
+			return false;
+
+		player.money += card.cost;
+		console.log(card.id + " card selled by player " + player.nick + " he got " + card.cost + " money");
+
+		if (player.money > 0)
+		{
+			var loserIndex = this.losers.indexOf(player);
+			if (loserIndex >= 0)
+			{
+				console.log('removing player from losser list');
+				this.losers.splice(loserIndex, 1);
+			}
+		}
+
 		return card.id;
 	}
 
@@ -476,6 +495,25 @@ class PortalCard extends Card
 			delete this.mapPlayers[player.id];
 			map.map[this.portalPoint].mapPlayers[player.id] = player;
 			path.push(this.portalPoint);
+		}
+	}
+}
+
+class RandomCardHolder extends Card
+{
+	constructor(image)
+	{
+		super(image);
+		this.image = 'images/cards/holder.png';
+		this.needFill = true;
+		this.cards = [];
+	}
+
+	postStep(map, player, position, path)
+	{
+		if (this.cards.length > 0)
+		{
+			map.addPlayerCard(player, this.cards[Math.floor(Math.random() * this.cards.length)]);
 		}
 	}
 }
