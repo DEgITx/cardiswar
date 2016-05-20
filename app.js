@@ -244,6 +244,7 @@ class CardMap
 		this.players[player.id] = player;
 		this.map[0].mapPlayers[player.id] = player;
 		this.playersKeys = Object.keys(this.players);
+		this.currentTurn = Math.floor(Math.random() * this.playersKeys.length);
 	}
 
 	removePlayer(player)
