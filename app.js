@@ -8,10 +8,12 @@ class Card
 {
 	constructor(image)
 	{
-		this.id = CARD_ID++;
+		this.id = ++CARD_ID;
 		this.nextCard = null;
 		this.prevCard = null;
 		this.mapPlayers = {};
+		this.owner = null;
+		this.position = -1;
 
 		this.x = 50;
 		this.y = 50;
@@ -32,6 +34,8 @@ class Card
 		{}, this);
 		obj.nextCard = null;
 		obj.prevCard = null;
+		if (obj.owner != null)
+			obj.owner = obj.owner.id;
 		obj.mapPlayers = [];
 		for (var id in this.mapPlayers)
 			obj.mapPlayers.push(id);
@@ -66,6 +70,18 @@ class PrisonCard extends Card
 
 	postStep(map, player, position, path)
 	{
+		var findIgnore = false;
+		player.inventory.forEach(function(card, index)
+		{
+			if (card instanceof IgnorePrisonCard)
+			{
+				map.removePlayerCard(player, card);
+				findIgnore = true;
+			}
+		});
+		if (findIgnore)
+			return;
+
 		player.stepskip = this.stepskip;
 	}
 
@@ -103,7 +119,6 @@ class PurchaseCard extends Card
 		this.cost = cost || 0;
 		this.penalty = penalty || [];
 		this.currentPenalty = 0;
-		this.owner = null;
 		this.group = group || null;
 		this.groupEffect = 0;
 	}
@@ -234,8 +249,8 @@ class CardMap
 					break;
 			}
 		}
-		card.id = this.map.length;
-		this.map.push(card);
+		var position = this.map.push(card);
+		card.position = position - 1;
 	}
 
 	addPlayer(player)
@@ -292,7 +307,7 @@ class CardMap
 		console.log('player ' + this.players[player.id].nick + ' roll: ' + roll);
 		var path = [];
 		var cell = this.map[currentPosition];
-		path.push(cell.id);
+		path.push(cell.position);
 
 		if (this.currentTurn < this.playersKeys.length - 1)
 			this.currentTurn++;
@@ -309,10 +324,10 @@ class CardMap
 		while (roll-- > 0)
 		{
 			cell = cell.nextCard;
-			path.push(cell.id);
+			path.push(cell.position);
 			cell.inStep(this, player, this.players[player.id].position);
 		}
-		this.players[player.id].position = cell.id;
+		this.players[player.id].position = cell.position;
 		cell.mapPlayers[player.id] = player;
 
 		// Выпоняем действия карты после хода
@@ -396,9 +411,9 @@ class CardMap
 		return true;
 	}
 
-	sellCard(gamer, cardId)
+	sellCard(gamer, playerCard)
 	{
-		var card = this.map[cardId];
+		var card = this.map[playerCard.position];
 		var player = this.players[gamer.id];
 
 		if (!(card instanceof PurchaseCard) || card.owner != player)
@@ -423,7 +438,7 @@ class CardMap
 			}
 		}
 
-		return card.id;
+		return card.position;
 	}
 
 }
@@ -484,7 +499,7 @@ class PortalCard extends Card
 
 	setPortalDestination(card)
 	{
-		this.portalPoint = card.id;
+		this.portalPoint = card.position;
 	}
 
 	postStep(map, player, position, path)
@@ -499,22 +514,46 @@ class PortalCard extends Card
 	}
 }
 
-class RandomCardHolder extends Card
+class RandomHolderCard extends Card
 {
 	constructor(image)
 	{
 		super(image);
+		this.description = 'Здесь можно получить бесплатную карточку';
 		this.image = 'images/cards/holder.png';
 		this.needFill = true;
 		this.cards = [];
+	}
+
+	setCards(cards)
+	{
+		this.cards = cards;
+	}
+
+	addCard(card)
+	{
+		this.cards.push(card);
 	}
 
 	postStep(map, player, position, path)
 	{
 		if (this.cards.length > 0)
 		{
-			map.addPlayerCard(player, this.cards[Math.floor(Math.random() * this.cards.length)]);
+			var object = this.cards[Math.floor(Math.random() * this.cards.length)];
+			if (object instanceof IgnorePrisonCard)
+				map.addPlayerCard(player, new IgnorePrisonCard);
 		}
+	}
+}
+
+class IgnorePrisonCard extends Card
+{
+	constructor(image)
+	{
+		super(image);
+		this.image = 'images/cards/antiprison.jpg';
+		this.text = 'Вы можете выйти из тюрячки не мотая срок, ведь этой карты вполне достаточно чтобы забашлять охране';
+		this.color = 0xAAAAAA;
 	}
 }
 
@@ -522,7 +561,9 @@ class RandomCardHolder extends Card
 map.append(new StartCard); // Старт
 var sunGroup = new CardGroup(0xD6D600, 'images/cards/sun.png', 'Это солнечный сет, несущий счатье и радость людям. Единственный минус, то что он слабенький.');
 map.append(new PurchaseCard(250, [100, 200, 250, 300, 350], sunGroup));
-map.append(new WhiteCard);
+var random_card1 = new RandomHolderCard;
+random_card1.addCard(new IgnorePrisonCard);
+map.append(random_card1);
 map.append(new PurchaseCard(350, [200, 350, 500, 600, 750], sunGroup));
 map.append(new PurchaseCard(500, [300, 400, 550, 700, 900], sunGroup));
 var treeGroup = new CardGroup(0x74E30B, 'images/cards/tree.jpg', 'Древестный сет. Почувствуйте себя настоящим садоводом на поле боя.');
@@ -567,8 +608,8 @@ map.append(new PurchaseCard(8000, [6300, 8000, 9000, 10000, 11000], electricityG
 map.append(new WhiteCard, CARD_LEFT);
 map.append(new PurchaseCard(9500, [8000, 9500, 11000, 11500, 12000], electricityGroup), CARD_LEFT);
 var pure_1 = new WhiteCard;
-portal_1.setPortalDestination(pure_1);
 map.append(pure_1, CARD_LEFT);
+portal_1.setPortalDestination(pure_1);
 map.append(new PurchaseCard(10000, [8500, 10000, 12500, 14000, 15000], electricityGroup), CARD_LEFT);
 map.append(new PrisonCard, CARD_LEFT);
 var inyanGroup = new CardGroup(0xDB3B9E, 'images/cards/inyan.jpg', 'Добро и зло - эти 2 карты неразлучны, до того момента пока 2 идиота их не купят, каждый по одной.');
@@ -664,13 +705,13 @@ io.on('connection', function(socket)
 		});
 	});
 
-	socket.on('sellcard', function(data)
+	socket.on('sellcard', function(card)
 	{
 		if (players[socket.id] == null)
 		{
 			return;
 		}
-		var cell = map.sellCard(players[socket.id], data.id);
+		var cell = map.sellCard(players[socket.id], card);
 		io.sockets.emit('sellcard',
 		{
 			player: map.players[socket.id],

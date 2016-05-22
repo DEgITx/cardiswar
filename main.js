@@ -137,8 +137,14 @@ window.addEventListener('DOMContentLoaded', function()
 			cardGroup.scale.set(0.3, 0.3);
 			//cardGroup.scale.set(0.4, 0.4);
 
+			var color = 0xFFFFFF;
+			if (card.color != null)
+				color = card.color;
+			else if (card.group.color != null)
+				color = card.group.color;
+
 			var graphics = game.add.graphics(45, 53);
-			graphics.beginFill(card.group.color, 1);
+			graphics.beginFill(color, 1);
 			graphics.drawRect(30, 30, 635, 925);
 			cardGroup.add(cardImage);
 			cardGroup.add(graphics);
@@ -159,7 +165,7 @@ window.addEventListener('DOMContentLoaded', function()
 				cardImage.loadTexture('card_shine');
 			}
 
-			if (card.group.image.length > 0)
+			if (card.group != null && card.group.image.length > 0)
 			{
 				graphics = game.add.graphics(0, 0);
 				graphics.beginFill(0xFFFFFF, 1);
@@ -194,7 +200,7 @@ window.addEventListener('DOMContentLoaded', function()
 
 			graphics = game.add.graphics(45, 53);
 			cardGroup.add(graphics);
-			graphics.beginFill(LightenDarkenColor(card.group.color, 140), 1);
+			graphics.beginFill(LightenDarkenColor(color, 140), 1);
 			graphics.drawRoundedRect(410, 60, 220, 120, 20);
 			var costText = game.add.text(480, 133, card.cost,
 			{
@@ -205,7 +211,7 @@ window.addEventListener('DOMContentLoaded', function()
 
 			graphics = game.add.graphics(45, 53);
 			cardGroup.add(graphics);
-			graphics.beginFill(LightenDarkenColor(card.group.color, 140), 1);
+			graphics.beginFill(LightenDarkenColor(color, 140), 1);
 			graphics.drawCircle(110, 120, 100);
 			var groupEffectText = game.add.text(134, 132, card.groupEffect,
 			{
@@ -215,19 +221,22 @@ window.addEventListener('DOMContentLoaded', function()
 			cardGroup.add(groupEffectText);
 
 
-			card.penalty.forEach(function(penalty, i)
+			if (card.penalty != null)
 			{
-				var graphics = game.add.graphics(45, 53);
-				cardGroup.add(graphics);
-				graphics.beginFill(LightenDarkenColor(card.group.color, 140), 1);
-				graphics.drawRoundedRect(80, 70 + 580 + (i * 58), 530, 50, 20);
-				var penaltyText = game.add.text(135, 70 + 639 + (i * 58), (card.currentPenalty == i ? '> ' : '') + 'штраф ' + (i + 1) + ": " + penalty,
+				card.penalty.forEach(function(penalty, i)
 				{
-					fontSize: '30px',
-					fill: '#000'
+					var graphics = game.add.graphics(45, 53);
+					cardGroup.add(graphics);
+					graphics.beginFill(LightenDarkenColor(color, 140), 1);
+					graphics.drawRoundedRect(80, 70 + 580 + (i * 58), 530, 50, 20);
+					var penaltyText = game.add.text(135, 70 + 639 + (i * 58), (card.currentPenalty == i ? '> ' : '') + 'штраф ' + (i + 1) + ": " + penalty,
+					{
+						fontSize: '30px',
+						fill: '#000'
+					});
+					cardGroup.add(penaltyText);
 				});
-				cardGroup.add(penaltyText);
-			});
+			}
 
 			var sellCardImage = game.add.sprite(600, 900, 'sell');
 			sellCardImage.alpha = 0.7;
@@ -668,8 +677,8 @@ window.addEventListener('DOMContentLoaded', function()
 					});
 				}
 
-				map[data.cell.id] = data.cell;
-				drawCellBounds(data.cell.id);
+				map[data.cell.position] = data.cell;
+				drawCellBounds(data.cell.position);
 				drawInventory();
 				drawOnline();
 				drawCardInfo();
