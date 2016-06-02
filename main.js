@@ -494,6 +494,8 @@ window.addEventListener('DOMContentLoaded', function()
 
 	socket.on('join', function(data)
 	{
+		game.kineticScrolling.start();
+
 		nickInput.destroy();
 		var moneyBag = game.add.sprite(0, game.camera.height - 130, 'bag');
 		moneyBag.fixedToCamera = true;
@@ -714,10 +716,21 @@ window.addEventListener('DOMContentLoaded', function()
 	function create()
 	{
 		game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
-		var background = game.add.image(0, 0, 'background');
-		//var backgroundRatio = background.width/background.height
-
 		game.add.plugin(Fabrique.Plugins.InputField);
+		game.kineticScrolling = game.plugins.add(Phaser.Plugin.KineticScrolling);
+		game.kineticScrolling.configure(
+		{
+			kineticMovement: true,
+			timeConstantScroll: 325, //really mimic iOS
+			horizontalScroll: true,
+			verticalScroll: true,
+			horizontalWheel: true,
+			verticalWheel: false,
+			deltaWheel: 40
+		});
+
+		var background = game.add.image(0, 0, 'background');
+
 		nickInput = game.add.inputField(game.camera.width / 2, game.camera.height / 2,
 		{
 			font: '36px Arial',

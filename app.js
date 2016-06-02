@@ -458,6 +458,7 @@ app.get('/', function(req, res)
 app.use(express.static('public'));
 app.use('/phaser', express.static('node_modules/phaser/build'));
 app.use('/phaser-input', express.static('node_modules/phaser-input/build'));
+app.use('/phaser-kinetic-scrolling-plugin', express.static('node_modules/phaser-kinetic-scrolling-plugin/dist'));
 
 var players = {};
 var map = new CardMap;
