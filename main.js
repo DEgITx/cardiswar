@@ -1,4 +1,4 @@
-var socket = io('http://draftup.org:8099');
+var socket = io('http://127.0.0.1:8099');
 
 window.addEventListener('DOMContentLoaded', function()
 {
@@ -154,20 +154,40 @@ window.addEventListener('DOMContentLoaded', function()
 				cardImage.loadTexture('card_shine');
 			}
 
-			if (card.group != null && card.group.image.length > 0)
+			var image;
+			if (card.image.length > 0)
+				image = card.image;
+			else if (card.group != null && card.group.image.length > 0)
+				image = card.group.image;
+
+			if (image != null)
 			{
 				graphics = game.add.graphics(0, 0);
 				graphics.beginFill(0xFFFFFF, 1);
 				graphics.drawRect(75, 260, 635, 280);
 				cardGroup.add(graphics);
 
-				loadTexture(card.group.image, function()
+				loadTexture(image, function()
 				{
-					var cardCoolImage = game.add.sprite(250, 260, card.group.image);
+					var cardCoolImage = game.add.sprite(250, 260, image);
 					cardCoolImage.width = 280;
 					cardCoolImage.height = 280;
 					cardGroup.add(cardCoolImage);
 				});
+			}
+
+			if (card.group != null)
+			{
+				graphics = game.add.graphics(45, 53);
+				cardGroup.add(graphics);
+				graphics.beginFill(LightenDarkenColor(color, 140), 1);
+				graphics.drawCircle(110, 120, 100);
+				var groupEffectText = game.add.text(134, 132, card.groupEffect,
+				{
+					fontSize: '64px',
+					fill: '#000'
+				});
+				cardGroup.add(groupEffectText);
 			}
 
 			var text = '';
@@ -187,28 +207,6 @@ window.addEventListener('DOMContentLoaded', function()
 				cardGroup.add(cardText);
 			}
 
-			graphics = game.add.graphics(45, 53);
-			cardGroup.add(graphics);
-			graphics.beginFill(LightenDarkenColor(color, 140), 1);
-			graphics.drawRoundedRect(410, 60, 220, 120, 20);
-			var costText = game.add.text(480, 133, card.cost,
-			{
-				fontSize: '64px',
-				fill: '#000'
-			});
-			cardGroup.add(costText);
-
-			graphics = game.add.graphics(45, 53);
-			cardGroup.add(graphics);
-			graphics.beginFill(LightenDarkenColor(color, 140), 1);
-			graphics.drawCircle(110, 120, 100);
-			var groupEffectText = game.add.text(134, 132, card.groupEffect,
-			{
-				fontSize: '64px',
-				fill: '#000'
-			});
-			cardGroup.add(groupEffectText);
-
 
 			if (card.penalty != null)
 			{
@@ -227,17 +225,31 @@ window.addEventListener('DOMContentLoaded', function()
 				});
 			}
 
-			var sellCardImage = game.add.sprite(600, 900, 'sell');
-			sellCardImage.alpha = 0.7;
-			sellCardImage.width = 128;
-			sellCardImage.height = 128;
-			sellCardImage.inputEnabled = true;
-			sellCardImage.events.onInputDown.add(function()
+			if (card.cost != null)
 			{
-				socket.emit('sellcard', card);
-			}, this);
-			cardGroup.add(sellCardImage);
+				graphics = game.add.graphics(45, 53);
+				cardGroup.add(graphics);
+				graphics.beginFill(LightenDarkenColor(color, 140), 1);
+				graphics.drawRoundedRect(410, 60, 220, 120, 20);
+				var costText = game.add.text(480, 133, card.cost,
+				{
+					fontSize: '64px',
+					fill: '#000'
+				});
+				cardGroup.add(costText);
 
+				var sellCardImage = game.add.sprite(600, 900, 'sell');
+				sellCardImage.alpha = 0.7;
+				sellCardImage.width = 128;
+				sellCardImage.height = 128;
+				sellCardImage.inputEnabled = true;
+				sellCardImage.events.onInputDown.add(function()
+				{
+					socket.emit('sellcard', card);
+				}, this);
+				cardGroup.add(sellCardImage);
+
+			}
 
 			cardGroup.cameraOffset.y = game.camera.height - cardGroup.height;
 			cardGroup.cameraOffset.x = oldCardX + cardGroup.width;
