@@ -466,6 +466,18 @@ window.addEventListener('DOMContentLoaded', function()
 		{
 			for (var i = 0; i < map.length; i++)
 			{
+				// расширяем границы мира
+				if (game.world.width < map[i].x + map[i].width + 400)
+				{
+					console.log('resize world to ' + (map[i].x + map[i].width + 400) + 'x' + game.world.height);
+					game.world.setBounds(0, 0, map[i].x + map[i].width + 400, game.world.height);
+				}
+				if (game.world.height < map[i].y + map[i].height + 400)
+				{
+					console.log('resize world to ' + game.world.width + 'x' + (map[i].y + map[i].height + 400));
+					game.world.setBounds(0, 0, game.world.width, map[i].y + map[i].height + 400);
+				}
+
 				if (map[i].cost > 0)
 				{
 					var costText = game.add.text(map[i].x + map[i].width / 2 - 23, map[i].y + map[i].height / 2 - 10, map[i].cost,
@@ -760,7 +772,6 @@ window.addEventListener('DOMContentLoaded', function()
 		};
 
 		cursors = game.input.keyboard.createCursorKeys();
-		game.world.setBounds(0, 0, 2000, 2000);
 	}
 
 	var waitPlayerCursorOnPoint = 1;
