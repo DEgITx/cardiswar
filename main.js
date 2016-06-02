@@ -1,15 +1,5 @@
 var socket = io('http://draftup.org:8099');
 
-mobileAndTabletcheck = function()
-{
-	var check = false;
-	(function(a)
-	{
-		if (/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino|android|ipad|playbook|silk/i.test(a) || /1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(a.substr(0, 4))) check = true
-	})(navigator.userAgent || navigator.vendor || window.opera);
-	return check;
-}
-
 window.addEventListener('DOMContentLoaded', function()
 {
 	var joined = false;
@@ -22,10 +12,9 @@ window.addEventListener('DOMContentLoaded', function()
 	var mapGroup = null;
 	var loadingGroup = null;
 	var freezeGamer = false;
+	var cursors;
 
-	var ratio = window.innerWidth > window.innerHeight ? window.innerHeight / window.innerWidth : window.innerWidth / window.innerHeight;
-	ratio = mobileAndTabletcheck() ? 0.5625 : ratio;
-	var game = new Phaser.Game(1600, 1600 * ratio, Phaser.AUTO, '',
+	var game = new Phaser.Game(window.innerWidth * window.devicePixelRatio, window.innerHeight * window.devicePixelRatio, Phaser.AUTO, '',
 	{
 		preload: preload,
 		create: create,
@@ -85,7 +74,7 @@ window.addEventListener('DOMContentLoaded', function()
 
 		freezeGroup = game.add.group();
 
-		var freezeImage = game.add.sprite(game.world.centerX, game.world.centerY, 'freeze');
+		var freezeImage = game.add.sprite(game.camera.width / 2, game.camera.height / 2, 'freeze');
 		freezeImage.x -= freezeImage.width / 2;
 		freezeImage.y -= freezeImage.height / 2;
 		freezeGroup.add(freezeImage);
@@ -250,9 +239,10 @@ window.addEventListener('DOMContentLoaded', function()
 			cardGroup.add(sellCardImage);
 
 
-			cardGroup.y = game.world.height - cardGroup.height;
-			cardGroup.x = oldCardX + cardGroup.width;
-			oldCardX = cardGroup.x;
+			cardGroup.cameraOffset.y = game.camera.height - cardGroup.height;
+			cardGroup.cameraOffset.x = oldCardX + cardGroup.width;
+			cardGroup.fixedToCamera = true;
+			oldCardX = cardGroup.cameraOffset.x;
 		});
 	}
 
@@ -272,10 +262,11 @@ window.addEventListener('DOMContentLoaded', function()
 		{
 			onlineGroup = game.add.group();
 			onlineGroup.alpha = 0.7;
-			var graphics = game.add.graphics(game.world.width - 260, 30);
+			var graphics = game.add.graphics(game.camera.width - 260, 30);
 			onlineGroup.add(graphics);
 			graphics.beginFill(0x000000, 1);
 			graphics.drawRoundedRect(0, 0, 250, 300, 25);
+			graphics.fixedToCamera = true;
 		}
 		var i = 0;
 		for (var id in players)
@@ -283,11 +274,12 @@ window.addEventListener('DOMContentLoaded', function()
 			var text = (currentTurn != null && currentTurn.id == id ? '> ' : '') + players[id].nick + ' - ' + players[id].money + "$" + " - карт: " + players[id].inventory.length;
 			if (onlineGroupTexts[id] == null)
 			{
-				onlineGroupTexts[id] = game.add.text(game.world.width - 245, 50 + i * 40, text,
+				onlineGroupTexts[id] = game.add.text(game.camera.width - 245, 50 + i * 40, text,
 				{
 					fontSize: '18px',
 					fill: '#fff'
 				});
+				onlineGroupTexts[id].fixedToCamera = true;
 				onlineGroup.add(onlineGroupTexts[id]);
 			}
 			else
@@ -308,8 +300,9 @@ window.addEventListener('DOMContentLoaded', function()
 			cardInfoGroup = null;
 		}
 		cardInfoGroup = game.add.group();
+		cardInfoGroup.fixedToCamera = true;
 		cardInfoGroup.alpha = 0.7;
-		var graphics = game.add.graphics(game.world.width - 260, 350);
+		var graphics = game.add.graphics(game.camera.width - 260, 350);
 		cardInfoGroup.add(graphics);
 		graphics.beginFill(0x000000, 1);
 		graphics.drawRoundedRect(0, 0, 250, 100, 25);
@@ -317,7 +310,7 @@ window.addEventListener('DOMContentLoaded', function()
 
 		if (map[player.position].cost > 0)
 		{
-			var cardCost = game.add.text(game.world.width - 245, 364, "Эта карта стоит: " + map[player.position].cost,
+			var cardCost = game.add.text(game.camera.width - 245, 364, "Эта карта стоит: " + map[player.position].cost,
 			{
 				fontSize: '18px',
 				fill: '#fff'
@@ -332,7 +325,7 @@ window.addEventListener('DOMContentLoaded', function()
 		//}
 		if (map[player.position].description.length > 0)
 		{
-			var descText = game.add.text(game.world.width - 245, 390, map[player.position].description,
+			var descText = game.add.text(game.camera.width - 245, 390, map[player.position].description,
 			{
 				fontSize: '12px',
 				fill: '#fff',
@@ -502,14 +495,16 @@ window.addEventListener('DOMContentLoaded', function()
 	socket.on('join', function(data)
 	{
 		nickInput.destroy();
-		var moneyBag = game.add.sprite(0, game.world.height - 130, 'bag');
-		moneyText = game.add.text(10, game.world.height - 70, '0$',
+		var moneyBag = game.add.sprite(0, game.camera.height - 130, 'bag');
+		moneyBag.fixedToCamera = true;
+		moneyText = game.add.text(10, game.camera.height - 70, '0$',
 		{
 			fontSize: '25px',
 			fill: '#000'
 		});
+		moneyText.fixedToCamera = true;
 
-		stepButton = game.add.button(game.world.width - 100, game.world.height - 100, 'next', function()
+		stepButton = game.add.button(game.camera.width - 100, game.camera.height - 100, 'next', function()
 		{
 			if (freezeGamer)
 				return;
@@ -519,8 +514,9 @@ window.addEventListener('DOMContentLoaded', function()
 		}, this, 2, 1, 0);
 		stepButton.width = 80;
 		stepButton.height = 80;
+		stepButton.fixedToCamera = true;
 
-		buyButton = game.add.button(game.world.width - 180, game.world.height - 100, 'buy', function()
+		buyButton = game.add.button(game.camera.width - 180, game.camera.height - 100, 'buy', function()
 		{
 			if (freezeGamer)
 				return;
@@ -529,8 +525,9 @@ window.addEventListener('DOMContentLoaded', function()
 		}, this, 2, 1, 0);
 		buyButton.width = 80;
 		buyButton.height = 80;
+		buyButton.fixedToCamera = true;
 
-		buttonHideCards = game.add.button(game.world.width - 250, game.world.height - 50, 'down', function()
+		buttonHideCards = game.add.button(game.camera.width - 250, game.camera.height - 50, 'down', function()
 		{
 			cardGroups.forEach(function(card)
 			{
@@ -542,8 +539,9 @@ window.addEventListener('DOMContentLoaded', function()
 		}, this, 2, 1, 0);
 		buttonHideCards.width = 50;
 		buttonHideCards.height = 50;
+		buttonHideCards.fixedToCamera = true;
 
-		buttonLeftCards = game.add.button(120, game.world.height - 50, 'left', function()
+		buttonLeftCards = game.add.button(120, game.camera.height - 50, 'left', function()
 		{
 			if (drawInventoryAligin > 0)
 			{
@@ -553,8 +551,9 @@ window.addEventListener('DOMContentLoaded', function()
 		}, this, 2, 1, 0);
 		buttonLeftCards.width = 50;
 		buttonLeftCards.height = 50;
+		buttonLeftCards.fixedToCamera = true;
 
-		buttonRightCards = game.add.button(game.world.width - 330, game.world.height - 50, 'right', function()
+		buttonRightCards = game.add.button(game.camera.width - 330, game.camera.height - 50, 'right', function()
 		{
 			if (drawInventoryAligin < player.inventory.length - drawInventoryAliginLength)
 			{
@@ -564,6 +563,7 @@ window.addEventListener('DOMContentLoaded', function()
 		}, this, 2, 1, 0);
 		buttonRightCards.width = 50;
 		buttonRightCards.height = 50;
+		buttonRightCards.fixedToCamera = true;
 
 		players = data.map.players;
 		player = data.player;
@@ -718,7 +718,7 @@ window.addEventListener('DOMContentLoaded', function()
 		//var backgroundRatio = background.width/background.height
 
 		game.add.plugin(Fabrique.Plugins.InputField);
-		nickInput = game.add.inputField(game.world.centerX, game.world.centerY,
+		nickInput = game.add.inputField(game.camera.width / 2, game.camera.height / 2,
 		{
 			font: '36px Arial',
 			fill: '#666666',
@@ -745,6 +745,9 @@ window.addEventListener('DOMContentLoaded', function()
 				});
 			}
 		};
+
+		cursors = game.input.keyboard.createCursorKeys();
+		game.world.setBounds(0, 0, 2000, 2000);
 	}
 
 	var waitPlayerCursorOnPoint = 1;
@@ -814,16 +817,17 @@ window.addEventListener('DOMContentLoaded', function()
 						loadingGroup = null;
 					}
 					loadingGroup = game.add.group();
-					var loading = game.add.sprite(game.world.width - 550, 30, 'loading');
+					var loading = game.add.sprite(game.camera.width / 2 - 250, game.camera.height / 2 - 250, 'loading');
 					loading.animations.add('spin');
 					loading.animations.play('spin', 7, true);
 					loadingGroup.add(loading);
-					var loadingText = game.add.text(game.world.width - 550, 250, 'Пикачу крутится\n и ожидает вашего хода',
+					var loadingText = game.add.text(game.camera.width / 2 - 250, game.camera.height / 2 - 250 + loading.height, 'Пикачу крутится\n и ожидает вашего хода',
 					{
 						fontSize: '20px',
 						fill: '#000'
 					});
 					loadingGroup.add(loadingText);
+					loadingGroup.fixedToCamera = true;
 				}
 
 				if (freezeGamer)
@@ -833,7 +837,23 @@ window.addEventListener('DOMContentLoaded', function()
 			}
 		}
 
+		if (cursors.up.isDown)
+		{
+			game.camera.y -= 5;
+		}
+		else if (cursors.down.isDown)
+		{
+			game.camera.y += 5;
+		}
 
+		if (cursors.left.isDown)
+		{
+			game.camera.x -= 5;
+		}
+		else if (cursors.right.isDown)
+		{
+			game.camera.x += 5;
+		}
 	}
 
 });
