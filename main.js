@@ -1,4 +1,4 @@
-var socket = io('http://127.0.0.1:8099');
+var socket = io('http://draftup.org:8099');
 
 window.addEventListener('DOMContentLoaded', function()
 {
@@ -591,6 +591,11 @@ window.addEventListener('DOMContentLoaded', function()
 		buttonRightCards.height = 50;
 		buttonRightCards.fixedToCamera = true;
 
+		rollDice = game.add.sprite(game.camera.width - 165, game.camera.height - 265, 'dice_2');
+		rollDice.width = 110;
+		rollDice.height = 110;
+		rollDice.fixedToCamera = true;
+
 		players = data.map.players;
 		player = data.player;
 		map = data.map.map;
@@ -651,6 +656,7 @@ window.addEventListener('DOMContentLoaded', function()
 				loadingGroup = null;
 			}
 			playerDoingMove = true;
+			rollDice.loadTexture('dice_' + data.roll);
 		});
 
 		socket.on('buycard', function(data)
@@ -735,6 +741,13 @@ window.addEventListener('DOMContentLoaded', function()
 		game.load.image('fishka_3', 'images/fishka/fishka_orange.png');
 		game.load.image('fishka_4', 'images/fishka/fishka_green.png');
 		game.load.image('fishka_5', 'images/fishka/fishka_ocean.png');
+
+		game.load.image('dice_1', 'images/dice/1.png');
+		game.load.image('dice_2', 'images/dice/2.png');
+		game.load.image('dice_3', 'images/dice/3.png');
+		game.load.image('dice_4', 'images/dice/4.png');
+		game.load.image('dice_5', 'images/dice/5.png');
+		game.load.image('dice_6', 'images/dice/6.png');
 	}
 
 	function create()

@@ -292,17 +292,23 @@ class CardMap
 		if (this.players[this.playersKeys[this.currentTurn]].id != player.id)
 		{
 			console.log('not player ' + player.nick + ' turn');
-			return [];
+			return {
+				path: [],
+				roll: 0
+			};
 		}
 
 		if (this.losers.length > 0)
 		{
 			console.log('cant make step because of there are some losers');
-			return [];
+			return {
+				path: [],
+				roll: 0
+			};
 		}
 
-		//var roll = Math.floor((Math.random() * 6) + 1);
-		var roll = 1;
+		var roll = Math.floor((Math.random() * 6) + 1);
+		//var roll = 1;
 		var currentPosition = this.players[player.id].position;
 		console.log('player ' + this.players[player.id].nick + ' roll: ' + roll);
 		var path = [];
@@ -317,8 +323,12 @@ class CardMap
 		// Выпоняем действия карты перед ходом
 		if (!cell.preStep(this, player, this.players[player.id].position))
 		{
-			return path;
+			return {
+				path: path,
+				roll: roll
+			};
 		}
+		var saveRoll = roll;
 
 		delete cell.mapPlayers[player.id];
 		while (roll-- > 0)
@@ -333,7 +343,10 @@ class CardMap
 		// Выпоняем действия карты после хода
 		cell.postStep(this, player, this.players[player.id].position, path);
 
-		return path;
+		return {
+			path: path,
+			roll: saveRoll
+		};
 	}
 
 	addPlayerCard(player, card)
@@ -672,12 +685,17 @@ io.on('connection', function(socket)
 		{
 			return;
 		}
-		var path = map.makeStep(players[socket.id]);
+		var
+		{
+			path,
+			roll
+		} = map.makeStep(players[socket.id]);
 		io.sockets.emit('makestep',
 		{
 			player: players[socket.id],
 			map: map,
 			path: path,
+			roll: roll,
 			turn: map.players[map.playersKeys[map.currentTurn]],
 		});
 		if (map.players[socket.id] == null)
