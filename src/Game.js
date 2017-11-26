@@ -53,12 +53,14 @@ class Sessions
         socket.emit('join',
         {
             player: this.players[socket.id],
-            map
+            map,
+            turn: map.players[map.playersKeys[map.currentTurn]].id
         });
         this.broadcast(socket, 'joinplayer',
         {
             player: this.players[socket.id],
-            map
+            map,
+            turn: map.players[map.playersKeys[map.currentTurn]].id
         });
         console.log('add player to session', player.session)
     }
@@ -83,10 +85,12 @@ class Sessions
             if(typeof session !== 'undefined')
             {
                 this.sessions[session].players = this.sessions[session].players.filter(p => p.id !== player.id)
-                this.sessions[session].map.removePlayer(this.players[socket.id])
+                let map = this.sessions[session].map;
+                map.removePlayer(this.players[socket.id])
                 this.broadcast(socket, 'leftplayer',
                 {
-                    player: this.players[socket.id]
+                    player: this.players[socket.id],
+                    turn: map.players.length > 0 && map.players[map.playersKeys[map.currentTurn]].id
                 });
                 if(this.sessions[session].players.length === 0)
                 {
@@ -174,7 +178,7 @@ module.exports = (io) => {
                 map: map,
                 path: path,
                 roll: roll,
-                turn: map.players[map.playersKeys[map.currentTurn]],
+                turn: map.players[map.playersKeys[map.currentTurn]].id,
             });
             if (map.players[socket.id] == null)
             {

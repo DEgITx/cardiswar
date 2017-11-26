@@ -516,6 +516,31 @@ window.addEventListener('DOMContentLoaded', function()
 		});
 	}
 
+	function showMyTurn()
+	{
+		console.log(currentTurn, player.id)
+		if (currentTurn == player.id)
+		{
+			if (loadingGroup != null)
+			{
+				loadingGroup.destroy();
+				loadingGroup = null;
+			}
+			loadingGroup = game.add.group();
+			var loading = game.add.sprite(game.camera.width / 2 - 250, game.camera.height / 2 - 250, 'loading');
+			loading.animations.add('spin');
+			loading.animations.play('spin', 7, true);
+			loadingGroup.add(loading);
+			var loadingText = game.add.text(game.camera.width / 2 - 250, game.camera.height / 2 - 250 + loading.height, 'Пикачу крутится\n и ожидает вашего хода',
+			{
+				fontSize: '20px',
+				fill: '#000'
+			});
+			loadingGroup.add(loadingText);
+			loadingGroup.fixedToCamera = true;
+		}
+	}
+
 	socket.on('join', function(data)
 	{
 		game.kineticScrolling.start();
@@ -612,12 +637,26 @@ window.addEventListener('DOMContentLoaded', function()
 		drawMap();
 		drawCardInfo();
 
+		function checkTurn(data)
+		{
+			currentTurn = data.turn;
+			if (currentTurn !== player.id && loadingGroup != null)
+			{
+				loadingGroup.destroy();
+				loadingGroup = null;
+			}
+		}
+		checkTurn(data)
+		showMyTurn()
+
 		socket.on('joinplayer', function(data)
 		{
 			console.log('Player ' + data.player.id + ' join');
 			map = data.map.map;
 			players = data.map.players;
 			addMapColor(data.player.id);
+			checkTurn(data)
+			showMyTurn()
 			drawMap();
 			drawOnline();
 		});
@@ -632,6 +671,8 @@ window.addEventListener('DOMContentLoaded', function()
 				delete playersCursor[data.player.id];
 			}
 			removeMapColor(data.player.id);
+			checkTurn(data)
+			showMyTurn()
 			drawOnline();
 		});
 
@@ -649,12 +690,7 @@ window.addEventListener('DOMContentLoaded', function()
 			}
 
 			playersCursor[data.player.id].movePoints = data.path;
-			currentTurn = data.turn;
-			if (currentTurn.id != data.player.id && loadingGroup != null)
-			{
-				loadingGroup.destroy();
-				loadingGroup = null;
-			}
+			checkTurn(data)
 			playerDoingMove = true;
 			rollDice.loadTexture('dice_' + data.roll);
 		});
@@ -859,27 +895,7 @@ window.addEventListener('DOMContentLoaded', function()
 				drawCardInfo();
 				playerDoingMove = false;
 
-				if (currentTurn.id == player.id)
-				{
-					if (loadingGroup != null)
-					{
-						loadingGroup.destroy();
-						loadingGroup = null;
-					}
-					loadingGroup = game.add.group();
-					var loading = game.add.sprite(game.camera.width / 2 - 250, game.camera.height / 2 - 250, 'loading');
-					loading.animations.add('spin');
-					loading.animations.play('spin', 7, true);
-					loadingGroup.add(loading);
-					var loadingText = game.add.text(game.camera.width / 2 - 250, game.camera.height / 2 - 250 + loading.height, 'Пикачу крутится\n и ожидает вашего хода',
-					{
-						fontSize: '20px',
-						fill: '#000'
-					});
-					loadingGroup.add(loadingText);
-					loadingGroup.fixedToCamera = true;
-				}
-
+				showMyTurn()
 				buyButton.visible = player.canBuyCard;
 
 				if (freezeGamer)
