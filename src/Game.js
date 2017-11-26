@@ -8,7 +8,7 @@ class Sessions
         this.sockets = {}
 
         this.sessions = []
-        this.playersPerGame = 3;
+        this.playersPerGame = 5;
     }
 
     addPlayer(socket)
