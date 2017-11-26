@@ -1,4 +1,4 @@
-var socket = io(document.location.protocol + '//' + document.location.hostname + ('sss' === 'production' ? '/' : ':8099/'));
+var socket = io(document.location.protocol + '//' + document.location.hostname + (PRODUCTION ? '/' : ':8099/'));
 
 window.addEventListener('DOMContentLoaded', function()
 {

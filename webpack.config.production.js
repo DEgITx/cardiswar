@@ -30,6 +30,7 @@ module.exports = {
                 minifyURLs: true,
             },
         }),
+        new webpack.DefinePlugin({PRODUCTION: true}),
         // Generate a service worker script that will precache, and keep up to date,
         // the HTML & assets that are part of the Webpack build.
         new SWPrecacheWebpackPlugin({
