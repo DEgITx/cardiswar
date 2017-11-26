@@ -2,12 +2,12 @@
   "name": "monopoly",
   "version": "0.1.0",
   "dependencies": {
+    "@orange-games/phaser-input": "^2.0.5",
     "express": "^4.16.2",
     "gulp": "^3.9.1",
     "gulp-uglify": "^1.5.3",
     "jest": "^21.2.1",
     "phaser": "^2.6.2",
-    "phaser-input": "^1.2.6",
     "phaser-kinetic-scrolling-plugin": "^1.0.2",
     "socket.io": "^2.0.4"
   },

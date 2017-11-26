@@ -1,4 +1,4 @@
-var socket = io('http://draftup.org:8099');
+var socket = io(document.location.protocol + '//' + document.location.hostname + ('sss' === 'production' ? '/' : ':8099/'));
 
 window.addEventListener('DOMContentLoaded', function()
 {
@@ -753,7 +753,7 @@ window.addEventListener('DOMContentLoaded', function()
 	function create()
 	{
 		game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
-		game.add.plugin(Fabrique.Plugins.InputField);
+		game.add.plugin(PhaserInput.Plugin);
 		game.kineticScrolling = game.plugins.add(Phaser.Plugin.KineticScrolling);
 		game.kineticScrolling.configure(
 		{
@@ -789,6 +789,7 @@ window.addEventListener('DOMContentLoaded', function()
 			if (e.keyCode == 13 && !joined && nickInput.text.text.length > 0)
 			{
 				joined = true;
+				console.log('join')
 				socket.emit('join',
 				{
 					nick: nickInput.text.text
