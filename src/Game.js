@@ -20,6 +20,7 @@ class Sessions
             stepskip: 0,
             cardGroupMap: {},
             nick: '',
+            canBuyCard: false,
         }
         this.players[socket.id] = player
         this.sockets[socket.id] = socket;

@@ -150,6 +150,9 @@ class CardMap
 		// Выпоняем действия карты после хода
 		cell.postStep(this, player, this.players[player.id].position, path);
 
+		// Проверяем возможность купить карту
+		this.players[player.id].canBuyCard = this.canBuyCard(this.players[player.id])
+
 		return {
 			path: path,
 			roll: saveRoll
@@ -175,7 +178,7 @@ class CardMap
 		return true;
 	}
 
-	buyCard(player)
+	canBuyCard(player)
 	{
 		const currentPosition = this.players[player.id].position;
 		let card = this.map[currentPosition];
@@ -196,6 +199,15 @@ class CardMap
 			console.log('card already owned');
 			return false;
 		}
+
+		return card
+	}
+
+	buyCard(player)
+	{
+		let card = this.canBuyCard(player)
+		if(!card)
+			return false;
 
 		player.money -= card.cost;
 		this.addPlayerCard(player, card);

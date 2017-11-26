@@ -880,6 +880,8 @@ window.addEventListener('DOMContentLoaded', function()
 					loadingGroup.fixedToCamera = true;
 				}
 
+				buyButton.visible = player.canBuyCard;
+
 				if (freezeGamer)
 				{
 					drawFreeze();

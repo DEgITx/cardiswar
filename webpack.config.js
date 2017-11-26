@@ -18,6 +18,7 @@ module.exports = {
             inject: true,
             template: './html/index.html'
         }),
+        new webpack.DefinePlugin({PRODUCTION: false}),
         // Generate a service worker script that will precache, and keep up to date,
         // the HTML & assets that are part of the Webpack build.
         new SWPrecacheWebpackPlugin({
