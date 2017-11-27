@@ -4,6 +4,7 @@ window.addEventListener('DOMContentLoaded', function()
 {
 	var joined = false;
 	var nickInput;
+	var nickEnterButton;
 	var players;
 	var player;
 	var map;
@@ -761,6 +762,7 @@ window.addEventListener('DOMContentLoaded', function()
 	{
 		console.log('loading')
 		nickInput.destroy();
+		nickEnterButton.destroy()
 		let text = game.add.text(game.camera.width/2 - 120, game.camera.height/2, 'Loading game data... it can take a little time...',
 		{
 			fontSize: '18px',
@@ -780,6 +782,7 @@ window.addEventListener('DOMContentLoaded', function()
 		game.load.image('background', 'images/background.jpg');
 		game.load.spritesheet('loading', 'images/pikachu.png', 232, 227, 7);
 		game.load.image('freeze', 'images/freeze.png');
+		game.load.image('start', 'images/start.png');
 
 		game.load.image('card', 'images/card.png');
 		game.load.image('card_shine', 'images/card_shine.png');
@@ -841,9 +844,8 @@ window.addEventListener('DOMContentLoaded', function()
 		nickInput.x -= nickInput.width / 2;
 		nickInput.y -= nickInput.height / 2;
 
-		game.input.keyboard.onDownCallback = function(e)
-		{
-			if (e.keyCode == 13 && !joined && nickInput.text.text.length > 0)
+		const startLogin = () => {
+			if (!joined && nickInput.text.text.length > 0)
 			{
 				joined = true;
 				console.log('join')
@@ -851,6 +853,17 @@ window.addEventListener('DOMContentLoaded', function()
 				{
 					nick: nickInput.text.text
 				});
+			}
+		}
+
+		nickEnterButton = game.add.button(nickInput.x + nickInput.width + 25, game.camera.height / 2, 'start', startLogin, this, 2, 1, 0);
+		nickEnterButton.y -= nickEnterButton.height / 2;
+
+		game.input.keyboard.onDownCallback = function(e)
+		{
+			if (e.keyCode == 13)
+			{
+				startLogin()
 			}
 		};
 
