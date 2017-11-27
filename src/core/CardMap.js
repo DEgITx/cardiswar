@@ -15,6 +15,7 @@ class CardMap
 		this.playersKeys = [];
 		this.currentTurn = 0;
 		this.losers = [];
+		this.maxRoll = 6;
 	}
 
 	append(card, position)
@@ -56,12 +57,22 @@ class CardMap
 					card.y = this.map[this.map.length - 1].y;
 					break;
 			}
+			// Check intersection
+			for(const alreadyCard of this.map)
+				if(alreadyCard.x === card.x && alreadyCard.y === card.y)
+					throw new Error('card intersect with other card')
 		}
 		card.position = this.map.push(card) - 1;
 	}
 
 	addPlayer(player)
 	{
+		if(!player.id || player.id.length == 0)
+			throw new Error('no player id for player add')
+
+		if(this.map.length == 0)
+			throw new Error('no map fields')
+
 		player.position = 0;
 		this.players[player.id] = player;
 		this.map[0].mapPlayers[player.id] = player;
@@ -114,7 +125,7 @@ class CardMap
 			};
 		}
 
-		let roll = Math.floor((Math.random() * 6) + 1);
+		let roll = Math.floor((Math.random() * this.maxRoll) + 1);
 		//let roll = 1;
 		const currentPosition = this.players[player.id].position;
 		console.log('player ' + this.players[player.id].nick + ' roll: ' + roll);
