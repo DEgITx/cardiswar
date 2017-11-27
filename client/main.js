@@ -770,6 +770,7 @@ window.addEventListener('DOMContentLoaded', function()
 			game.lockRender = true;
 			await onJoin(data)
 			game.lockRender = false;
+			text.destroy()
 			console.log('loaded')
 		}, 20)
 	});
