@@ -630,14 +630,14 @@ window.addEventListener('DOMContentLoaded', function()
 		console.log('Me with id ' + data.player.id + ' joined');
 		console.log(map);
 
-		drawInventory();
-		drawOnline();
 		// detect color map
 		for (id in players)
 		{
 			addMapColor(id);
 		}
 		await drawMap();
+		drawInventory();
+		drawOnline();
 		drawCardInfo();
 
 		function checkTurn(data)
