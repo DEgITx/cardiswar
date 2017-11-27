@@ -413,6 +413,8 @@ window.addEventListener('DOMContentLoaded', function()
 
 	function drawMap()
 	{
+		return new Promise((mapResolve) =>
+		{
 		if (mapGroup != null)
 		{
 			mapGroup.destroy();
@@ -512,7 +514,10 @@ window.addEventListener('DOMContentLoaded', function()
 					playersCursor[gamer].y -= playersCursor[gamer].height / 2;
 					mapGroup.add(playersCursor[gamer]);
 				});
+
+				mapResolve()
 			}
+		});
 		});
 	}
 
@@ -541,11 +546,9 @@ window.addEventListener('DOMContentLoaded', function()
 		}
 	}
 
-	socket.on('join', function(data)
-	{
+	let onJoin = async (data) => {
 		game.kineticScrolling.start();
 
-		nickInput.destroy();
 		var moneyBag = game.add.sprite(0, game.camera.height - 130, 'bag');
 		moneyBag.fixedToCamera = true;
 		moneyText = game.add.text(10, game.camera.height - 70, '0$',
@@ -634,7 +637,7 @@ window.addEventListener('DOMContentLoaded', function()
 		{
 			addMapColor(id);
 		}
-		drawMap();
+		await drawMap();
 		drawCardInfo();
 
 		function checkTurn(data)
@@ -752,6 +755,23 @@ window.addEventListener('DOMContentLoaded', function()
 				drawCardInfo();
 			}
 		});
+	}
+
+	socket.on('join', (data) =>
+	{
+		console.log('loading')
+		nickInput.destroy();
+		let text = game.add.text(game.camera.width/2 - 120, game.camera.height/2, 'Loading game data... it can take a little time...',
+		{
+			fontSize: '18px',
+			fill: '#000'
+		});
+		setTimeout(async () => {
+			game.lockRender = true;
+			await onJoin(data)
+			game.lockRender = false;
+			console.log('loaded')
+		}, 20)
 	});
 
 	function preload()
