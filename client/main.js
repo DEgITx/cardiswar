@@ -15,11 +15,12 @@ window.addEventListener('DOMContentLoaded', function()
 	var freezeGamer = false;
 	var cursors;
 
-	var game = new Phaser.Game(window.innerWidth * window.devicePixelRatio, window.innerHeight * window.devicePixelRatio, Phaser.AUTO, '',
+	var game = new Phaser.Game(window.innerWidth * window.devicePixelRatio, window.innerHeight * window.devicePixelRatio, Phaser.CANVAS, '',
 	{
 		preload: preload,
 		create: create,
-		update: update
+		update: update,
+		render: render,
 	});
 
 	var playerDoingMove = false;
@@ -808,6 +809,9 @@ window.addEventListener('DOMContentLoaded', function()
 		game.load.image('dice_4', 'images/dice/4.png');
 		game.load.image('dice_5', 'images/dice/5.png');
 		game.load.image('dice_6', 'images/dice/6.png');
+
+		if(!PRODUCTION)
+			game.time.advancedTiming = true;
 	}
 
 	function create()
@@ -957,5 +961,11 @@ window.addEventListener('DOMContentLoaded', function()
 			game.camera.x += 5;
 		}
 	}
+
+	function render()
+    {
+		if(!PRODUCTION)
+        	game.debug.text((game.time.fps || '--') + ' fps', 5, 30, "#00ff00");
+    }
 
 });
