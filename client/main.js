@@ -5,6 +5,7 @@ window.addEventListener('DOMContentLoaded', function()
 	var joined = false;
 	var nickInput;
 	var nickEnterButton;
+	let appLogo;
 	var players;
 	var player;
 	var map;
@@ -15,13 +16,14 @@ window.addEventListener('DOMContentLoaded', function()
 	var freezeGamer = false;
 	var cursors;
 
-	var game = new Phaser.Game(window.innerWidth * window.devicePixelRatio, window.innerHeight * window.devicePixelRatio, Phaser.CANVAS, '',
-	{
+	let gameState = {
 		preload: preload,
 		create: create,
 		update: update,
 		render: render,
-	});
+	}
+	let game = new Phaser.Game(window.innerWidth * window.devicePixelRatio, window.innerHeight * window.devicePixelRatio, Phaser.CANVAS, '');
+	game.state.add('game', gameState)
 
 	var playerDoingMove = false;
 
@@ -534,56 +536,29 @@ window.addEventListener('DOMContentLoaded', function()
 				loadingGroup = null;
 			}
 			loadingGroup = game.add.group();
-			var loading = game.add.sprite(game.camera.width / 2 - 250, game.camera.height / 2 - 250, 'loading');
+			var loading = game.add.sprite(game.camera.width / 2, game.camera.height / 2, 'loading');
+			loading.x -= loading.width / 2;
+			loading.y -= loading.height / 2;
 			loading.animations.add('spin');
 			loading.animations.play('spin', 7, true);
 			loadingGroup.add(loading);
-			var loadingText = game.add.text(game.camera.width / 2 - 250, game.camera.height / 2 - 250 + loading.height, 'Пикачу крутится\n и ожидает вашего хода',
+			var loadingText = game.add.text(game.camera.width / 2, game.camera.height / 2 + loading.height / 2 + 20, 'Пикачу крутится\n и ожидает вашего хода',
 			{
 				fontSize: '20px',
 				fill: '#000'
 			});
+			loadingText.x -= loadingText.width / 2;
+			loadingText.y -= loadingText.height / 2;
 			loadingGroup.add(loadingText);
 			loadingGroup.fixedToCamera = true;
+			loadingGroup.alpha = 0.5
 		}
 	}
 
 	let onJoin = async (data) => {
 		game.kineticScrolling.start();
 
-		var moneyBag = game.add.sprite(0, game.camera.height - 130, 'bag');
-		moneyBag.fixedToCamera = true;
-		moneyText = game.add.text(10, game.camera.height - 70, '0$',
-		{
-			fontSize: '25px',
-			fill: '#000'
-		});
-		moneyText.fixedToCamera = true;
-
-		stepButton = game.add.button(game.camera.width - 100, game.camera.height - 100, 'next', function()
-		{
-			if (freezeGamer)
-				return;
-
-			if (!playerDoingMove)
-				socket.emit('makestep');
-		}, this, 2, 1, 0);
-		stepButton.width = 80;
-		stepButton.height = 80;
-		stepButton.fixedToCamera = true;
-
-		buyButton = game.add.button(game.camera.width - 180, game.camera.height - 100, 'buy', function()
-		{
-			if (freezeGamer)
-				return;
-
-			socket.emit('buycard');
-		}, this, 2, 1, 0);
-		buyButton.width = 80;
-		buyButton.height = 80;
-		buyButton.fixedToCamera = true;
-
-		buttonHideCards = game.add.button(game.camera.width - 250, game.camera.height - 50, 'down', function()
+		var moneyBag = game.add.button(0, game.camera.height - 160, 'bag', function()
 		{
 			cardGroups.forEach(function(card)
 			{
@@ -593,9 +568,26 @@ window.addEventListener('DOMContentLoaded', function()
 					card.visible = 0;
 			});
 		}, this, 2, 1, 0);
-		buttonHideCards.width = 50;
-		buttonHideCards.height = 50;
-		buttonHideCards.fixedToCamera = true;
+		moneyBag.width /= 5;
+		moneyBag.height /= 5;
+		moneyBag.fixedToCamera = true;
+		moneyText = game.add.text(15, game.camera.height - 73, '0$',
+		{
+			fontSize: '25px',
+			fill: '#000'
+		});
+		moneyText.fixedToCamera = true;
+
+		buyButton = game.add.button(game.camera.width - 106, game.camera.height - 205, 'buy', function()
+		{
+			if (freezeGamer)
+				return;
+
+			socket.emit('buycard');
+		}, this, 2, 1, 0);
+		buyButton.width = 80;
+		buyButton.height = 80;
+		buyButton.fixedToCamera = true;
 
 		buttonLeftCards = game.add.button(120, game.camera.height - 50, 'left', function()
 		{
@@ -621,11 +613,6 @@ window.addEventListener('DOMContentLoaded', function()
 		buttonRightCards.height = 50;
 		buttonRightCards.fixedToCamera = true;
 
-		rollDice = game.add.sprite(game.camera.width - 165, game.camera.height - 265, 'dice_2');
-		rollDice.width = 110;
-		rollDice.height = 110;
-		rollDice.fixedToCamera = true;
-
 		players = data.map.players;
 		player = data.player;
 		map = data.map.map;
@@ -641,6 +628,18 @@ window.addEventListener('DOMContentLoaded', function()
 		drawInventory();
 		drawOnline();
 		drawCardInfo();
+
+		rollDice = game.add.button(game.camera.width - 120, game.camera.height - 120, 'dice_2', function()
+		{
+			if (freezeGamer)
+				return;
+
+			if (!playerDoingMove)
+				socket.emit('makestep');
+		}, this, 2, 1, 0);
+		rollDice.width = 110;
+		rollDice.height = 110;
+		rollDice.fixedToCamera = true;
 
 		function checkTurn(data)
 		{
@@ -762,6 +761,7 @@ window.addEventListener('DOMContentLoaded', function()
 	socket.on('join', (data) =>
 	{
 		console.log('loading')
+		appLogo.destroy()
 		nickInput.destroy();
 		nickEnterButton.destroy()
 		let text = game.add.text(game.camera.width/2 - 120, game.camera.height/2, 'Loading game data... it can take a little time...',
@@ -780,10 +780,17 @@ window.addEventListener('DOMContentLoaded', function()
 
 	function preload()
 	{
-		game.load.image('background', 'images/background.jpg');
+		if(!PRODUCTION)
+			game.time.advancedTiming = true;
+	}
+
+	function resources()
+	{
+		// loading screen
 		game.load.spritesheet('loading', 'images/pikachu.png', 232, 227, 7);
 		game.load.image('freeze', 'images/freeze.png');
 		game.load.image('start', 'images/start.png');
+		game.load.image('logo', 'images/logo.png');
 
 		game.load.image('card', 'images/card.png');
 		game.load.image('card_shine', 'images/card_shine.png');
@@ -808,11 +815,35 @@ window.addEventListener('DOMContentLoaded', function()
 		game.load.image('dice_3', 'images/dice/3.png');
 		game.load.image('dice_4', 'images/dice/4.png');
 		game.load.image('dice_5', 'images/dice/5.png');
-		game.load.image('dice_6', 'images/dice/6.png');
-
-		if(!PRODUCTION)
-			game.time.advancedTiming = true;
+		game.load.image('dice_6', 'images/dice/6.png');	
 	}
+
+	const loadingScreenState = {
+		preload: () => {
+			game.load.image('background', 'images/background.jpg');
+		},
+		create: () => {
+			game.state.start('loading')
+		}
+	}
+	const loading = {
+		preload: () => {
+			var background = game.add.image(0, 0, 'background')
+			let text = game.add.text(game.camera.width/2, game.camera.height/2, 'Loading game...',
+			{
+				fontSize: '18px',
+				fill: '#000'
+			});
+			text.x -= text.width/2;
+
+			resources()
+		},
+		create: () => game.state.start('game')
+	}
+	game.state.add('loadingScreen', loadingScreenState)
+	game.state.add('loading', loading)
+	game.state.start('loadingScreen')
+	
 
 	function create()
 	{
@@ -862,6 +893,22 @@ window.addEventListener('DOMContentLoaded', function()
 
 		nickEnterButton = game.add.button(nickInput.x + nickInput.width + 25, game.camera.height / 2, 'start', startLogin, this, 2, 1, 0);
 		nickEnterButton.y -= nickEnterButton.height / 2;
+
+		appLogo = game.add.button(game.camera.width / 2, game.camera.height / 2, 'logo', startLogin, this, 2, 1, 0);
+		appLogo.width = 300;
+		appLogo.height = 300;
+
+		appLogo.x -= appLogo.width / 2;
+		console.log(nickInput.height / 2)
+		appLogo.y -= appLogo.height + nickInput.height / 2;
+
+		nickInput.x -= nickEnterButton.width / 2 + 12
+		nickEnterButton.x -= nickEnterButton.width / 2 + 12
+		appLogo.x -= nickEnterButton.width / 2 + 12
+
+		nickInput.y -= 10
+		nickEnterButton.y -= 10
+		appLogo.y -= 10
 
 		game.input.keyboard.onDownCallback = function(e)
 		{

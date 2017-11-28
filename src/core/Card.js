@@ -13,8 +13,8 @@ class Card
 
 		this.x = 50;
 		this.y = 50;
-		this.height = 70;
-		this.width = 70;
+		this.height = 85;
+		this.width = 85;
 
 		this.image = image || '';
 		this.needFill = false;
