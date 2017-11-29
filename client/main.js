@@ -970,6 +970,9 @@ window.addEventListener('DOMContentLoaded', function()
 			for(let sessionId = 0; sessionId < sessions.length; sessionId++)
 			{
 				const session = sessions[sessionId]
+				if(!session)
+					continue;
+
 				let sticker = game.add.sprite(offsetX, offsetY, 'sticker')
 				stickerJoinGroup.add(sticker)
 				sticker.width /= 3;

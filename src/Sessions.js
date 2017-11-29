@@ -44,7 +44,7 @@ class Sessions
         if(sessionTo >= 0 && sessionTo < this.sessions.length)
         {
             session = sessionTo
-            if(this.sessions[session].players.length >= this.playersPerGame)
+            if(!this.sessions[session] || this.sessions[session].players.length >= this.playersPerGame)
             {   
                 let error = new Error('too much players on this session');
                 error.code = 'ToMuchPlayers'
@@ -53,7 +53,7 @@ class Sessions
         }
         
         // join
-        if(this.sessions.length > 0 && this.sessions[session].players.length < this.playersPerGame)
+        if(this.sessions.length > 0 && this.sessions[session] && this.sessions[session].players.length < this.playersPerGame)
         {
             player.session = session;
             this.sessions[session].players.push(player)
@@ -120,7 +120,7 @@ class Sessions
                 if(this.sessions[session].players.length === 0)
                 {
                     console.log('clean session', 'with 0 gamers')
-                    this.sessions.splice(session, 1)
+                    delete this.sessions[session]
                 }
                 console.log('removed player from game')
             }
