@@ -8,7 +8,7 @@ class Sessions
         this.sockets = {}
 
         this.sessions = []
-        this.playersPerGame = 5;
+        this.playersPerGame = 2;
     }
 
     static createPlayer(id)
@@ -32,24 +32,44 @@ class Sessions
         console.log('player connected with id: ' + socket.id);
     }
 
-    addPlayerToSession(socket)
+    addPlayerToSession(socket, sessionTo = -1)
     {
         const id = socket.id;
         let player = this.players[id];
         if(!player)
             throw new Error('no player for session')
 
-        if(this.sessions.length > 0 && this.sessions[this.sessions.length - 1].players.length < this.playersPerGame)
+        let session = this.sessions.length - 1;
+        // connect player to specified session
+        if(sessionTo >= 0 && sessionTo < this.sessions.length)
         {
-            player.session = this.sessions.length - 1;
-            this.sessions[this.sessions.length - 1].players.push(player)
+            session = sessionTo
+            if(this.sessions[session].players.length >= this.playersPerGame)
+            {   
+                let error = new Error('too much players on this session');
+                error.code = 'ToMuchPlayers'
+                throw error;
+            }
+        }
+        
+        // join
+        if(this.sessions.length > 0 && this.sessions[session].players.length < this.playersPerGame)
+        {
+            player.session = session;
+            this.sessions[session].players.push(player)
         }
         else
         {
             const map = Map1()
             const index = this.sessions.push({
                 players: [player],
-                map
+                map,
+                toJSON()
+                {
+                    return {
+                        players: this.players
+                    }
+                }
             })
             player.session = index - 1
         }
@@ -143,6 +163,15 @@ class Sessions
             if(this.sockets[player.id])
                 this.sockets[player.id].emit(message, value)
         })
+    }
+
+    all(message, value)
+    {
+        for(let player of this.players)
+        {
+            if(this.sockets[player.id])
+                this.sockets[player.id].emit(message, value)
+        }
     }
 }
 

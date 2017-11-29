@@ -741,7 +741,8 @@ window.addEventListener('DOMContentLoaded', function()
 			playersCursor[data.player.id].movePoints = data.path;
 			checkTurn(data)
 			playerDoingMove = true;
-			rollDice.loadTexture('dice_' + data.roll);
+			if(data.roll > 0)
+				rollDice.loadTexture('dice_' + data.roll);
 		});
 
 		socket.on('buycard', function(data)
@@ -805,6 +806,7 @@ window.addEventListener('DOMContentLoaded', function()
 		appLogo.destroy()
 		nickInput.destroy();
 		nickEnterButton.destroy()
+		stickerJoinGroup.destroy()
 		let text = game.add.text(game.camera.width/2 - 120, game.camera.height/2, 'Loading game data... it can take a little time...',
 		{
 			fontSize: '18px',
@@ -832,6 +834,9 @@ window.addEventListener('DOMContentLoaded', function()
 		game.load.image('freeze', 'images/freeze.png');
 		game.load.image('start', 'images/start.png');
 		game.load.image('logo', 'images/logo.png');
+		
+		game.load.image('sticker', 'images/sticker.png');
+		game.load.image('join', 'images/join.png');
 
 		game.load.image('card', 'images/card.png');
 		game.load.image('card_shine', 'images/card_shine.png');
@@ -917,14 +922,15 @@ window.addEventListener('DOMContentLoaded', function()
 		nickInput.x -= nickInput.width / 2;
 		nickInput.y -= nickInput.height / 2;
 
-		const startLogin = () => {
+		const startLogin = (session) => {
 			if (!joined && nickInput.text.text.length > 0)
 			{
 				joined = true;
 				console.log('join')
 				socket.emit('join',
 				{
-					nick: nickInput.text.text
+					nick: nickInput.text.text,
+					session: session
 				});
 			}
 		}
@@ -957,6 +963,59 @@ window.addEventListener('DOMContentLoaded', function()
 		};
 
 		cursors = game.input.keyboard.createCursorKeys();
+
+		stickerJoinGroup = game.add.group()
+		socket.emit('sessions', ({sessions, maxPlayers}) => {
+			let offsetX = 0, offsetY = game.camera.height / 2 + 60;
+			for(let sessionId = 0; sessionId < sessions.length; sessionId++)
+			{
+				const session = sessions[sessionId]
+				let sticker = game.add.sprite(offsetX, offsetY, 'sticker')
+				stickerJoinGroup.add(sticker)
+				sticker.width /= 3;
+				sticker.height /= 3;
+				
+				let stickerTextGroup = game.add.group()
+
+				if(session.players)
+				{
+					let nickOffsetY = 0;
+					let i=1;
+					for(let player of session.players)
+					{
+						let nickText = game.add.text( 13, 17 + nickOffsetY, `${i++}. ${player.nick}`,
+						{
+							fontSize: '16px',
+							fill: '#000'
+						})
+						stickerTextGroup.add(nickText)
+						nickOffsetY += nickText.height + 1;
+					}
+				}
+				stickerTextGroup.rotation -= 0.05
+				stickerTextGroup.x = sticker.x
+				stickerTextGroup.y = sticker.y
+
+				if(session.players.length < maxPlayers)
+				{
+					let joinButton = game.add.button(sticker.width / 2, 17 + sticker.height, 'join', () => startLogin(sessionId), this, 2, 1, 0);
+					joinButton.width /= 9;
+					joinButton.height /= 9;
+					joinButton.x -= joinButton.width /2;
+					joinButton.y -= joinButton.height + 30;
+					stickerTextGroup.add(joinButton)
+				}
+
+				stickerJoinGroup.add(stickerTextGroup)
+				
+				offsetX += sticker.width
+				if(offsetX >= game.camera.width)
+				{
+					offsetY += sticker.height
+					offsetX = 0
+				}
+			}
+		});
 	}
 
 	var waitPlayerCursorOnPoint = 1;

@@ -12,8 +12,28 @@ module.exports = (io) => {
     
         socket.on('join', function(data)
         {
+            console.log('get jon', data.session)
             sessions.players[socket.id].nick = data.nick;
-            sessions.addPlayerToSession(socket)
+            const session = data.session
+            try
+            {
+                sessions.addPlayerToSession(socket, session)
+            } catch(e)
+            {   
+                if(e.code !== 'ToMuchPlayers')
+                    throw new Error('error on player add to session')
+                else
+                    console.log('too much players')
+            }
+            
+        });
+
+        socket.on('sessions', function(callback)
+        {
+            callback({
+                sessions: sessions.sessions,
+                maxPlayers: sessions.playersPerGame
+            })
         });
     
         socket.on('makestep', function(data)
