@@ -133,7 +133,7 @@ window.addEventListener('DOMContentLoaded', function()
 		moneyText.text = player.money + "$";
 		
 		const offsetX = 120;
-		const cardsAvaliableWidth = game.camera.width - offsetX - 100;
+		const cardsAvaliableWidth = game.camera.width - offsetX - 90;
 		// for height mod
 		let cardsAvaliableHeight = game.camera.height;
 		if(player.inventory.length < 5)
@@ -620,10 +620,14 @@ window.addEventListener('DOMContentLoaded', function()
 	let onJoin = async (data) => {
 		game.kineticScrolling.start();
 
-		var moneyBag = game.add.button(0, game.camera.height - 160, 'bag', function()
-		{
-			cardGroups.forEach((card) => card.hideShow());
-		}, this, 2, 1, 0);
+		const buyCardAction = () => {
+			if (freezeGamer)
+				return;
+
+			socket.emit('buycard');
+		}
+
+		var moneyBag = game.add.button(0, game.camera.height - 160, 'bag', buyCardAction, this, 2, 1, 0);
 		moneyBag.width /= 5;
 		moneyBag.height /= 5;
 		moneyBag.fixedToCamera = true;
@@ -633,17 +637,6 @@ window.addEventListener('DOMContentLoaded', function()
 			fill: '#000'
 		});
 		moneyText.fixedToCamera = true;
-
-		buyButton = game.add.button(game.camera.width - 106, game.camera.height - 205, 'buy', function()
-		{
-			if (freezeGamer)
-				return;
-
-			socket.emit('buycard');
-		}, this, 2, 1, 0);
-		buyButton.width = 80;
-		buyButton.height = 80;
-		buyButton.fixedToCamera = true;
 
 		players = data.map.players;
 		player = data.player;
@@ -660,6 +653,19 @@ window.addEventListener('DOMContentLoaded', function()
 		drawInventory();
 		drawOnline();
 		drawCardInfo();
+
+		buyButton = game.add.button(game.camera.width - 106, game.camera.height - 205, 'buy', buyCardAction, this, 2, 1, 0);
+		buyButton.width = 80;
+		buyButton.height = 80;
+		buyButton.fixedToCamera = true;
+
+		buttonShowCards = game.add.button(game.camera.width - 90, game.camera.height - 260, 'down', function()
+		{
+			cardGroups.forEach((card) => card.hideShow())
+		}, this, 2, 1, 0);
+		buttonShowCards.width = 50;
+		buttonShowCards.height = 50;
+		buttonShowCards.fixedToCamera = true;
 
 		rollDice = game.add.button(game.camera.width - 120, game.camera.height - 120, 'dice_2', function()
 		{
@@ -824,12 +830,9 @@ window.addEventListener('DOMContentLoaded', function()
 		game.load.image('card_shine', 'images/card_shine.png');
 		game.load.image('sell', 'images/sell.png');
 
-		game.load.image('next', 'images/next.png');
 		game.load.image('buy', 'images/buy.png');
 		game.load.image('bag', 'images/bag.png');
 		game.load.image('down', 'images/down.png');
-		game.load.image('right', 'images/right.png');
-		game.load.image('left', 'images/left.png');
 
 		game.load.image('fishka_0', 'images/fishka/fishka_red.png');
 		game.load.image('fishka_1', 'images/fishka/fishka_purple.png');
