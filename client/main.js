@@ -935,10 +935,10 @@ window.addEventListener('DOMContentLoaded', function()
 			}
 		}
 
-		nickEnterButton = game.add.button(nickInput.x + nickInput.width + 25, game.camera.height / 2, 'start', startLogin, this, 2, 1, 0);
+		nickEnterButton = game.add.button(nickInput.x + nickInput.width + 25, game.camera.height / 2, 'start', () => startLogin(), this, 2, 1, 0);
 		nickEnterButton.y -= nickEnterButton.height / 2;
 
-		appLogo = game.add.button(game.camera.width / 2, game.camera.height / 2, 'logo', startLogin, this, 2, 1, 0);
+		appLogo = game.add.button(game.camera.width / 2, game.camera.height / 2, 'logo', () => startLogin(), this, 2, 1, 0);
 		appLogo.width = 300;
 		appLogo.height = 300;
 
