@@ -302,11 +302,18 @@ window.addEventListener('DOMContentLoaded', function()
 			if(cardsAvaliableWidth >= cardGroup.width * 1.5)
 			{
 				cardGroup.cameraOffset.y = game.camera.height - cardGroup.height;
-				const changeX = (cardsAvaliableWidth - cardGroup.width) / player.inventory.length;
-				cardGroup.cameraOffset.x = index * changeX;
-				if(typeof focusedCardIndex !== 'undefined')
-					if(index > focusedCardIndex)
-						cardGroup.cameraOffset.x += cardGroup.width - changeX;
+				if(cardsAvaliableWidth > player.inventory.length * cardGroup.width)
+				{
+					cardGroup.cameraOffset.x = index * cardGroup.width;
+				}
+				else
+				{
+					const changeX = (cardsAvaliableWidth - cardGroup.width) / player.inventory.length;
+					cardGroup.cameraOffset.x = index * changeX;
+					if(typeof focusedCardIndex !== 'undefined')
+						if(index > focusedCardIndex)
+							cardGroup.cameraOffset.x += cardGroup.width - changeX;
+				}
 				cardGroup.cameraOffset.x += offsetX;
 			}
 			else
