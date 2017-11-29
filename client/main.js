@@ -125,17 +125,21 @@ window.addEventListener('DOMContentLoaded', function()
 	}
 
 	var cardGroups = [];
-	var drawInventoryAligin = 0;
-	var drawInventoryAliginLength = 4;
-	var focusedCard = null;
+	var focusedCard;
+	var focusedCardIndex;
 
 	function drawInventory(align, alignLength)
 	{
-		drawInventoryAligin = align || drawInventoryAligin;
-		drawInventoryAliginLength = alignLength || drawInventoryAliginLength;
-		var workAlignLength = drawInventoryAliginLength;
 		moneyText.text = player.money + "$";
-		var oldCardX = 0;
+		
+		const offsetX = 120;
+		const cardsAvaliableWidth = game.camera.width - offsetX - 100;
+		// for height mod
+		let cardsAvaliableHeight = game.camera.height;
+		if(player.inventory.length < 5)
+			cardsAvaliableHeight /= 2;
+		
+		
 		cardGroups.forEach(function(card, index)
 		{
 			if (!(index in player.inventory))
@@ -143,11 +147,6 @@ window.addEventListener('DOMContentLoaded', function()
 		});
 		player.inventory.forEach(function(card, index)
 		{
-			if (drawInventoryAligin > 0 && index < drawInventoryAligin)
-				return;
-			if (drawInventoryAliginLength > 0 && workAlignLength-- <= 0)
-				return;
-
 			let visible = 1;
 			if (cardGroups[index] != null)
 			{
@@ -177,12 +176,22 @@ window.addEventListener('DOMContentLoaded', function()
 			cardImage.inputEnabled = true;
 			cardImage.events.onInputDown.add(function()
 			{
-				focusedCard = card;
 				player.inventory.forEach(function(card, index)
 				{
 					cardGroups[index].getBottom().loadTexture('card');
 				});
-				cardImage.loadTexture('card_shine');
+				if(!focusedCard || focusedCardIndex !== index)
+				{
+					focusedCard = card;
+					focusedCardIndex = index;
+					cardImage.loadTexture('card_shine');
+				}
+				else
+				{
+					focusedCard = undefined;
+					focusedCardIndex = undefined;
+				}
+				drawInventory()
 			}, this);
 			if (focusedCard != null && focusedCard.id == card.id)
 			{
@@ -287,10 +296,29 @@ window.addEventListener('DOMContentLoaded', function()
 
 			}
 
-			cardGroup.cameraOffset.y = game.camera.height - cardGroup.height;
-			cardGroup.cameraOffset.x = oldCardX + cardGroup.width;
 			cardGroup.fixedToCamera = true;
-			oldCardX = cardGroup.cameraOffset.x;
+
+			// card x,y
+			if(cardsAvaliableWidth >= cardGroup.width * 1.5)
+			{
+				cardGroup.cameraOffset.y = game.camera.height - cardGroup.height;
+				const changeX = (cardsAvaliableWidth - cardGroup.width) / player.inventory.length;
+				cardGroup.cameraOffset.x = index * changeX;
+				if(typeof focusedCardIndex !== 'undefined')
+					if(index > focusedCardIndex)
+						cardGroup.cameraOffset.x += cardGroup.width - changeX;
+				cardGroup.cameraOffset.x += offsetX;
+			}
+			else
+			{
+				cardGroup.cameraOffset.x += offsetX;
+				const changeY = (cardsAvaliableHeight - cardGroup.height) / player.inventory.length;
+				cardGroup.cameraOffset.y = game.camera.height - cardGroup.height
+				cardGroup.cameraOffset.y -= index * changeY;
+				if(typeof focusedCardIndex !== 'undefined')
+					if(index > focusedCardIndex)
+						cardGroup.cameraOffset.y -= cardGroup.height - changeY;
+			}
 
 			cardGroup.setVisible(visible);
 		});
@@ -617,30 +645,6 @@ window.addEventListener('DOMContentLoaded', function()
 		buyButton.height = 80;
 		buyButton.fixedToCamera = true;
 
-		buttonLeftCards = game.add.button(120, game.camera.height - 50, 'left', function()
-		{
-			if (drawInventoryAligin > 0)
-			{
-				drawInventoryAligin--;
-				drawInventory();
-			}
-		}, this, 2, 1, 0);
-		buttonLeftCards.width = 50;
-		buttonLeftCards.height = 50;
-		buttonLeftCards.fixedToCamera = true;
-
-		buttonRightCards = game.add.button(game.camera.width - 330, game.camera.height - 50, 'right', function()
-		{
-			if (drawInventoryAligin < player.inventory.length - drawInventoryAliginLength)
-			{
-				drawInventoryAligin++;
-				drawInventory();
-			}
-		}, this, 2, 1, 0);
-		buttonRightCards.width = 50;
-		buttonRightCards.height = 50;
-		buttonRightCards.fixedToCamera = true;
-
 		players = data.map.players;
 		player = data.player;
 		map = data.map.map;
@@ -738,8 +742,6 @@ window.addEventListener('DOMContentLoaded', function()
 			{
 				if (data.player.id == player.id)
 				{
-					if (player.inventory.length - drawInventoryAliginLength > 0)
-						drawInventoryAligin = player.inventory.length - drawInventoryAliginLength;
 					cardGroups.forEach(function(card)
 					{
 						card.show()
@@ -769,8 +771,6 @@ window.addEventListener('DOMContentLoaded', function()
 			{
 				if (data.player.id == player.id)
 				{
-					if (player.inventory.length - drawInventoryAliginLength > 0)
-						drawInventoryAligin = player.inventory.length - drawInventoryAliginLength;
 					cardGroups.forEach(function(card)
 					{
 						card.show()

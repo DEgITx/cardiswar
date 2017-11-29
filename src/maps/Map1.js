@@ -28,7 +28,9 @@ module.exports = () => {
     map.append(new PrisonCard);
     map.append(new PurchaseCard(1250, [1000, 1200, 1400, 1600, 1750], treeGroup));
     map.append(new WhiteCard);
-    map.append(new WhiteCard, CARD_BOTTOM);
+    let pure_1 = new WhiteCard;
+    map.append(pure_1, CARD_BOTTOM);
+    portal_1.setPortalDestination(pure_1);
     var krakenGroup = new CardGroup(0xAA2AEB, 'images/cards/kraken.jpg', 'Вы приютили у себя небольшого кракена. Он машет вам щупальцами в знак благодарности.');
     map.append(new PurchaseCard(1500, [1300, 1600, 1800, 2000, 2200], krakenGroup), CARD_BOTTOM);
     map.append(new PurchaseCard(1750, [1500, 1800, 2000, 2150, 2500], krakenGroup), CARD_LEFT);
@@ -60,9 +62,7 @@ module.exports = () => {
     map.append(new PurchaseCard(8000, [6300, 8000, 9000, 10000, 11000], electricityGroup), CARD_LEFT);
     map.append(new WhiteCard, CARD_LEFT);
     map.append(new PurchaseCard(9500, [8000, 9500, 11000, 11500, 12000], electricityGroup), CARD_LEFT);
-    var pure_1 = new WhiteCard;
-    map.append(pure_1, CARD_LEFT);
-    portal_1.setPortalDestination(pure_1);
+    map.append(new WhiteCard, CARD_LEFT);
     map.append(new PurchaseCard(10000, [8500, 10000, 12500, 14000, 15000], electricityGroup), CARD_LEFT);
     map.append(new PrisonCard, CARD_LEFT);
     var inyanGroup = new CardGroup(0xDB3B9E, 'images/cards/inyan.jpg', 'Добро и зло - эти 2 карты неразлучны, до того момента пока 2 идиота их не купят, каждый по одной.');
