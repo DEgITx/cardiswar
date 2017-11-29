@@ -63,6 +63,39 @@ window.addEventListener('DOMContentLoaded', function()
 		}
 	}
 
+	function fixHideShow(proxy)
+	{
+		proxy.hide = () =>
+		{
+			console.log('hidding')
+			if(proxy.height > 0)
+			{
+				proxy.realHeight = proxy.height
+				proxy.height = 0
+			}
+		}
+
+		proxy.show = () => {
+			if(proxy.realHeight)
+			{
+				proxy.height = proxy.realHeight
+				delete proxy.realHeight;
+			}
+		}
+
+		proxy.hideShow = () => {
+			if(proxy.realHeight)
+				proxy.show()
+			else
+				proxy.hide()
+		}
+
+		proxy.hidden = () => !!proxy.realHeight
+		proxy.setVisible = (visible) => visible ?  proxy.show() : proxy.hide()
+
+		return proxy
+	}
+
 	var freezeGroup = null;
 
 	function drawFreeze()
@@ -115,15 +148,14 @@ window.addEventListener('DOMContentLoaded', function()
 			if (drawInventoryAliginLength > 0 && workAlignLength-- <= 0)
 				return;
 
-			var visible = 1;
+			let visible = 1;
 			if (cardGroups[index] != null)
 			{
-				visible = cardGroups[index].visible;
+				visible = !cardGroups[index].hidden();
 				cardGroups[index].destroy();
 				delete cardGroups[index];
 			}
-			var cardGroup = game.add.group();
-			cardGroup.visible = visible;
+			let cardGroup = fixHideShow(game.add.group());
 			cardGroups[index] = cardGroup;
 			var cardImage = game.add.sprite(32, 32, 'card');
 			//cardGroup.create(32, 32, 'card');
@@ -259,6 +291,8 @@ window.addEventListener('DOMContentLoaded', function()
 			cardGroup.cameraOffset.x = oldCardX + cardGroup.width;
 			cardGroup.fixedToCamera = true;
 			oldCardX = cardGroup.cameraOffset.x;
+
+			cardGroup.setVisible(visible);
 		});
 	}
 
@@ -560,13 +594,7 @@ window.addEventListener('DOMContentLoaded', function()
 
 		var moneyBag = game.add.button(0, game.camera.height - 160, 'bag', function()
 		{
-			cardGroups.forEach(function(card)
-			{
-				if (card.visible == 0)
-					card.visible = 1;
-				else
-					card.visible = 0;
-			});
+			cardGroups.forEach((card) => card.hideShow());
 		}, this, 2, 1, 0);
 		moneyBag.width /= 5;
 		moneyBag.height /= 5;
@@ -714,7 +742,7 @@ window.addEventListener('DOMContentLoaded', function()
 						drawInventoryAligin = player.inventory.length - drawInventoryAliginLength;
 					cardGroups.forEach(function(card)
 					{
-						card.visible = 1;
+						card.show()
 					});
 				}
 
@@ -745,7 +773,7 @@ window.addEventListener('DOMContentLoaded', function()
 						drawInventoryAligin = player.inventory.length - drawInventoryAliginLength;
 					cardGroups.forEach(function(card)
 					{
-						card.visible = 1;
+						card.show()
 					});
 				}
 
