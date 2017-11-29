@@ -1,7 +1,7 @@
 # Card Is War - Browser Game
-<p align="center">
-[![Card Is War Game](https://raw.githubusercontent.com/DEgITx/cardiswar/master/public/images/logo.png)](https://cardiswar.now.sh)
-</p>
+
+<p align="center"><a href="https://cardiswar.now.sh"><img src="https://raw.githubusercontent.com/DEgITx/cardiswar/master/public/images/logo.png"></a></p>
+
 [![CircleCI Build Status](https://circleci.com/gh/DEgITx/cardiswar.png?style=shield)](https://circleci.com/gh/DEgITx/cardiswar)
 
 Browser online multi-player card game. Inspirited by monopoly-like games. Easy map and cards creation. Support players sessions with 1-6 players per game.
