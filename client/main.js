@@ -708,7 +708,7 @@ window.addEventListener('DOMContentLoaded', function()
 			showMyTurn()
 		}
 
-		socket.on('joinPlayer', function(data)
+		socket.on('joinedPlayer', function(data)
 		{
 			console.log('Player ' + data.player.id + ' join');
 			map = data.map.map;
@@ -723,7 +723,7 @@ window.addEventListener('DOMContentLoaded', function()
 			drawOnline();
 		});
 
-		socket.on('leftplayer', function(data)
+		socket.on('leftedPlayer', function(data)
 		{
 			console.log('Player ' + data.player.id + ' left');
 			delete players[data.player.id];
@@ -989,72 +989,105 @@ window.addEventListener('DOMContentLoaded', function()
 
 		stickerJoinGroup = game.add.group()
 		socket.emit('sessions', ({sessions, maxPlayers}) => {
-			let offsetX = 0, offsetY = game.camera.height / 2 + 60;
-			for(let sessionId = 0; sessionId < sessions.length; sessionId++)
-			{
-				const session = sessions[sessionId]
-				if(!session)
-					continue;
+			let drawSession = () => {
+				if(joined)
+					return;
 
-				let sticker = game.add.sprite(offsetX, offsetY, 'sticker')
-				stickerJoinGroup.add(sticker)
-				sticker.width /= 3;
-				sticker.height /= 3;
-				
-				let stickerTextGroup = game.add.group()
-
-				if(session.players)
+				if(stickerJoinGroup)
 				{
-					let nickOffsetY = 0;
-					let i=1;
-					for(let player of session.players)
+					stickerJoinGroup.destroy()
+					stickerJoinGroup = game.add.group()
+				}
+
+				let offsetX = 0, offsetY = game.camera.height / 2 + 60;
+				for(let sessionId = 0; sessionId < sessions.length; sessionId++)
+				{
+					const session = sessions[sessionId]
+					if(!session)
+						continue;
+	
+					let sticker = game.add.sprite(offsetX, offsetY, 'sticker')
+					stickerJoinGroup.add(sticker)
+					sticker.width /= 3;
+					sticker.height /= 3;
+					
+					let stickerTextGroup = game.add.group()
+	
+					if(session.players)
 					{
-						let nickText = game.add.text( 13, 17 + nickOffsetY, `${i++}. ${player.nick}`,
+						let nickOffsetY = 0;
+						let i=1;
+						for(let player of session.players)
 						{
-							fontSize: '16px',
-							fill: '#000'
-						})
-						stickerTextGroup.add(nickText)
-						nickOffsetY += nickText.height + 1;
+							let nickText = game.add.text( 13, 17 + nickOffsetY, `${i++}. ${player.nick}`,
+							{
+								fontSize: '16px',
+								fill: '#000'
+							})
+							stickerTextGroup.add(nickText)
+							nickOffsetY += nickText.height + 1;
+						}
 					}
-				}
-				stickerTextGroup.rotation -= 0.05
-				stickerTextGroup.x = sticker.x
-				stickerTextGroup.y = sticker.y
-
-				if(session.players.length < maxPlayers)
-				{
-					let joinButton = game.add.button(sticker.width / 2 + 20, 17 + sticker.height, 'join', () => startLogin(sessionId), this, 2, 1, 0);
-					joinButton.width /= 9;
-					joinButton.height /= 9;
-					joinButton.x -= joinButton.width /2;
-					joinButton.y -= joinButton.height + 30;
-					stickerTextGroup.add(joinButton)
-				}
-
-				let spectateButton = game.add.button(30, 17 + sticker.height, 'spectate', () => {
-					if (!joined)
+					stickerTextGroup.rotation -= 0.05
+					stickerTextGroup.x = sticker.x
+					stickerTextGroup.y = sticker.y
+	
+					if(session.players.length < maxPlayers)
 					{
-						joined = true;
-						socket.emit('spectate', sessionId);
+						let joinButton = game.add.button(sticker.width / 2 + 20, 17 + sticker.height, 'join', () => startLogin(sessionId), this, 2, 1, 0);
+						joinButton.width /= 9;
+						joinButton.height /= 9;
+						joinButton.x -= joinButton.width /2;
+						joinButton.y -= joinButton.height + 30;
+						stickerTextGroup.add(joinButton)
 					}
-				}, this, 2, 1, 0);
-				spectateButton.width /= 8;
-				spectateButton.height /= 8;
-				spectateButton.x -= spectateButton.width /2;
-				spectateButton.y -= spectateButton.height + 20;
-				stickerTextGroup.add(spectateButton)
-
-
-				stickerJoinGroup.add(stickerTextGroup)
-				
-				offsetX += sticker.width
-				if(offsetX >= game.camera.width)
-				{
-					offsetY += sticker.height
-					offsetX = 0
+	
+					let spectateButton = game.add.button(30, 17 + sticker.height, 'spectate', () => {
+						if (!joined)
+						{
+							joined = true;
+							socket.emit('spectate', sessionId);
+						}
+					}, this, 2, 1, 0);
+					spectateButton.width /= 8;
+					spectateButton.height /= 8;
+					spectateButton.x -= spectateButton.width /2;
+					spectateButton.y -= spectateButton.height + 20;
+					stickerTextGroup.add(spectateButton)
+	
+	
+					stickerJoinGroup.add(stickerTextGroup)
+					
+					offsetX += sticker.width
+					if(offsetX >= game.camera.width)
+					{
+						offsetY += sticker.height
+						offsetX = 0
+					}
 				}
 			}
+			drawSession()
+			socket.on('joinedPlayer', function({player})
+			{
+				const { session } = player;
+				if(sessions[session])
+					sessions[session].players.push(player)
+				else
+					sessions[session] = { players: [player], spectators: [] }
+				drawSession();
+			});
+			socket.on('leftedPlayer', function({player})
+			{
+				const { session } = player;
+				if(!sessions[session])
+					return;
+
+				sessions[session].players = sessions[session].players.filter(p => p.id !== player.id)
+				if(sessions[session].players.length === 0)
+					delete sessions[session]
+
+				drawSession();
+			});
 		});
 	}
 

@@ -83,12 +83,15 @@ class Sessions
             map,
             turn: map.players[map.playersKeys[map.currentTurn]].id
         });
-        this.broadcast(socket, 'joinPlayer',
+        this.broadcast(socket, 'joinedPlayer',
         {
             player: this.players[socket.id],
             map,
             turn: map.players[map.playersKeys[map.currentTurn]].id
         });
+        this.onlyToUnplayed('joinedPlayer', {
+            player: this.players[socket.id],
+        })
         console.log('add player to session', player.session)
     }
 
@@ -109,11 +112,17 @@ class Sessions
         const map = this.sessions[sessionTo].map;
         socket.emit('joinSpectator',
         {
-            player: player,
+            player,
             map,
             turn: map.players[map.playersKeys[map.currentTurn]].id
         });
-        
+        this.broadcast(socket, 'joinedSpectator', {
+            player
+        });
+        this.onlyToUnplayed('joinedSpectator', {
+            player
+        })
+
         console.log('add spectator', id, 'to session', sessionTo)
     }
 
@@ -148,19 +157,39 @@ class Sessions
                 map.removePlayer(this.players[socket.id])
                 if(findedPlayer)
                 {
-                    this.broadcast(socket, 'leftplayer',
+                    this.broadcast(socket, 'leftedPlayer',
                     {
-                        player: this.players[socket.id],
+                        player,
                         turn: map.players.length > 0 && map.players[map.playersKeys[map.currentTurn]].id
                     });
+                    this.onlyToUnplayed('leftedPlayer', {
+                        player,
+                    })
+                    console.log('removed', player.id, 'player from game')
                 }
-                this.sessions[session].spectators = this.sessions[session].spectators.filter(p => p.id !== player.id)
+                let findedSpectator = false
+                this.sessions[session].spectators = this.sessions[session].spectators.filter((p) => {
+                    if(p.id === player.id)
+                        findedSpectator = true
+                    
+                    return p.id !== player.id
+                })
+                if(findedSpectator)
+                {
+                    this.broadcast(socket, 'leftedSpectator',
+                    {
+                        player
+                    });
+                    this.onlyToUnplayed('leftedSpectator', {
+                        player,
+                    })
+                    console.log('removed', player.id, 'from spectators')
+                }
                 if(this.sessions[session].players.length === 0)
                 {
                     console.log('clean session', 'with 0 gamers')
                     delete this.sessions[session]
                 }
-                console.log('removed player from game')
             }
             delete this.players[id];
             delete this.sockets[id];
@@ -211,8 +240,9 @@ class Sessions
 
     all(message, value)
     {
-        for(let player of this.players)
+        for(let id in this.players)
         {
+            const player = this.players[id];
             if(this.sockets[player.id])
                 this.sockets[player.id].emit(message, value)
         }
@@ -220,11 +250,13 @@ class Sessions
 
     onlyToUnplayed(message, value)
     {
-        for(let player of this.players)
+        for(let id in this.players)
         {
-            if(player.session)
+            const player = this.players[id];
+            if(typeof player.session !== 'undefined')
                 continue;
 
+            console.log('unplayed message', message, 'to', player.id)
             if(this.sockets[player.id])
                 this.sockets[player.id].emit(message, value)
         }
