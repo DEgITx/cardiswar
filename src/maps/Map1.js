@@ -7,6 +7,7 @@ const PurchaseCard = require('../cards/PurchaseCard');
 const RandomHolderCard = require('../cards/RandomHolderCard');
 const WhiteCard = require('../cards/WhiteCard');
 const StartCard = require('../cards/StartCard');
+const RandomBuyCard = require('../cards/RandomBuyCard')
 
 module.exports = () => {
     let map = new CardMap;
@@ -16,6 +17,7 @@ module.exports = () => {
     map.append(new PurchaseCard(250, [100, 200, 250, 300, 350], sunGroup));
     var random_card1 = new RandomHolderCard;
     random_card1.addCard(new IgnorePrisonCard);
+    random_card1.addCard(new RandomBuyCard);
     map.append(random_card1);
     map.append(new PurchaseCard(350, [200, 350, 500, 600, 750], sunGroup));
     map.append(new PurchaseCard(500, [300, 400, 550, 700, 900], sunGroup));

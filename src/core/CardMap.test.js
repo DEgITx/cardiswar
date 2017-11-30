@@ -128,6 +128,7 @@ test('penality', () => {
   const money = player2.money;
   squereMap.makeStep(player2)
   expect(player2.money).toBe(money - 1300)
+  expect(squereMap.canBuyCard(player2)).toBeFalsy()
 });
 
 test('map loop (add money)', () => {
@@ -153,4 +154,15 @@ test('second penality', () => {
   const money = player2.money;
   squereMap.makeStep(player2)
   expect(player2.money).toBe(money - 1600)
+});
+
+test('sell card', () => {
+  const money = player1.money;
+  expect(squereMap.sellCard(player1, card3)).toBeGreaterThanOrEqual(0)
+  expect(player1.money).toBe(money + card3.cost)
+});
+
+test('buy spectacular card', () => {
+  expect(squereMap.buyCard(player2, card3)).toBeTruthy()
+  expect(card3.owner).toBe(player2)
 });

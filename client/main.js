@@ -306,6 +306,28 @@ window.addEventListener('DOMContentLoaded', function()
 
 			}
 
+			if(card.usable)
+			{
+				var sellCardImage = game.add.sprite(450, 80, 'use');
+				sellCardImage.width /= 2.8;
+				sellCardImage.height /= 2.8;
+				sellCardImage.inputEnabled = true;
+				sellCardImage.events.onInputDown.add(function()
+				{
+					socket.emit('useCard', card, ({player: p, data}) => {
+						player = p;
+						if(data && data.map)
+						{
+							map = data.map
+							drawMap();
+						}
+						drawOnline();
+						drawInventory();
+					});
+				}, this);
+				cardGroup.add(sellCardImage);
+			}
+
 			cardGroup.fixedToCamera = true;
 
 			// card x,y
@@ -873,6 +895,7 @@ window.addEventListener('DOMContentLoaded', function()
 		game.load.image('card', 'images/card.png');
 		game.load.image('card_shine', 'images/card_shine.png');
 		game.load.image('sell', 'images/sell.png');
+		game.load.image('use', 'images/use.png');
 
 		game.load.image('buy', 'images/buy.png');
 		game.load.image('bag', 'images/bag.png');

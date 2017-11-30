@@ -75,19 +75,6 @@ class PurchaseCard extends Card
 		return true;
 	}
 
-	toJSON()
-	{
-		let obj = Object.assign(
-		{}, this);
-		obj.nextCard = null;
-		obj.prevCard = null;
-		if (obj.owner != null)
-			obj.owner = obj.owner.id;
-		obj.mapPlayers = [];
-		for (let id in this.mapPlayers)
-			obj.mapPlayers.push(id);
-		return obj;
-	}
 }
 
 module.exports = PurchaseCard

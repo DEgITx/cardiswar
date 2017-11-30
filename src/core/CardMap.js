@@ -16,6 +16,7 @@ class CardMap
 		this.currentTurn = 0;
 		this.losers = [];
 		this.maxRoll = 6;
+		this.cards = []
 	}
 
 	append(card, position)
@@ -63,6 +64,7 @@ class CardMap
 					throw new Error('card intersect with other card')
 		}
 		card.position = this.map.push(card) - 1;
+		this.cards[card.id] = card;
 	}
 
 	addPlayer(player)
@@ -183,18 +185,31 @@ class CardMap
 			if (player.cardGroupMap[card.group.id] == null)
 				player.cardGroupMap[card.group.id] = [];
 			player.cardGroupMap[card.group.id].push(card);
+			if(card.group.onChangeGroupPower)
+				card.group.onChangeGroupPower(player.cardGroupMap[card.group.id].length)
 			player.cardGroupMap[card.group.id].forEach(function(card)
 			{
-				card.groupEffect = player.cardGroupMap[card.group.id].length;
+				card.groupPower = player.cardGroupMap[card.group.id].length;
+				if(card.onChangeGroupPower)
+					card.onChangeGroupPower(player.cardGroupMap[card.group.id].length)
 			});
 		}
+
+		// эта может быть новая карта
+		if(!this.cards[card.id])
+			this.cards[card.id] = card;
+
 		return true;
 	}
 
-	canBuyCard(player)
+	canBuyCard(player, card)
 	{
-		const currentPosition = this.players[player.id].position;
-		let card = this.map[currentPosition];
+		if(!card)
+		{
+			const currentPosition = this.players[player.id].position;
+			card = this.map[currentPosition];
+		}
+		
 		if (!(card instanceof PurchaseCard))
 		{
 			console.log('this is not pushase card');
@@ -216,9 +231,9 @@ class CardMap
 		return card
 	}
 
-	buyCard(player)
+	buyCard(player, card)
 	{
-		let card = this.canBuyCard(player)
+		card = this.canBuyCard(player, card)
 		if(!card)
 			return false;
 
@@ -237,7 +252,7 @@ class CardMap
 		player.inventory.splice(inventoryIndex, 1);
 		if (card.group != null)
 		{
-			card.groupEffect = 0;
+			card.groupPower = 0;
 			if (player.cardGroupMap[card.group.id] != null)
 			{
 				const index = player.cardGroupMap[card.group.id].indexOf(card);
@@ -245,9 +260,13 @@ class CardMap
 				{
 					console.log('reduce card power afer selling');
 					player.cardGroupMap[card.group.id].splice(index, 1);
+					if(card.group.onChangeGroupPower)
+						card.group.onChangeGroupPower(player.cardGroupMap[card.group.id].length)
 					player.cardGroupMap[card.group.id].forEach(function(card)
 					{
-						card.groupEffect = player.cardGroupMap[card.group.id].length;
+						card.groupPower = player.cardGroupMap[card.group.id].length;
+						if(card.onChangeGroupPower)
+							card.onChangeGroupPower(player.cardGroupMap[card.group.id].length)
 					});
 				}
 			}
@@ -268,7 +287,7 @@ class CardMap
 		}
 
 		if (!this.removePlayerCard(player, card))
-			return false;
+			return -1;
 
 		player.money += card.cost;
 		console.log(card.id + " card selled by player " + player.nick + " he got " + card.cost + " money");
@@ -284,6 +303,18 @@ class CardMap
 		}
 
 		return card.position;
+	}
+
+	useCard(player, card)
+	{
+		card = this.cards[card.id];
+		if(card.owner !== player)
+			return;
+
+		if(!card.use || typeof card.use !== 'function')
+			return;
+
+		return card.use(this, player)
 	}
 
 }

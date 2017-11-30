@@ -1,5 +1,6 @@
 const Card = require('../core/Card');
 const IgnorePrisonCard = require('./IgnorePrisonCard')
+const RandomBuyCard = require('./RandomBuyCard')
 
 class RandomHolderCard extends Card
 {
@@ -29,6 +30,8 @@ class RandomHolderCard extends Card
 			const object = this.cards[Math.floor(Math.random() * this.cards.length)];
 			if (object instanceof IgnorePrisonCard)
 				map.addPlayerCard(player, new IgnorePrisonCard);
+			else if(object instanceof RandomBuyCard)
+				map.addPlayerCard(player, new RandomBuyCard);
 		}
 	}
 }

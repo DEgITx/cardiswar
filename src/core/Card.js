@@ -35,6 +35,7 @@ class Card
 		obj.mapPlayers = [];
 		for (let id in this.mapPlayers)
 			obj.mapPlayers.push(id);
+		obj.usable = !!this.use;
 		return obj;
 	}
 

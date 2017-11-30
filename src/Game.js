@@ -2,6 +2,7 @@ const Sessions = require('./Sessions')
 
 module.exports = (io) => {
     let sessions = new Sessions()
+    console.log(process.env.NODE_ENV)
 
     io.on('connection', function(socket)
     {
@@ -119,5 +120,23 @@ module.exports = (io) => {
             });
         });
     
+        socket.on('useCard', function(card, callback)
+        {
+            console.log('use card')
+            const player = sessions.players[socket.id];
+            if(!player)
+                return;
+
+             let map = sessions.map(socket.id);
+             if(!map)
+                return;
+
+            let data = map.useCard(player, card);
+            if(callback)
+                callback({
+                    player,
+                    data: data
+                })
+        });
     });
 }
