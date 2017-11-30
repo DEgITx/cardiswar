@@ -49,6 +49,16 @@ test('simple map', () => {
   expect(card3.y).toBe(card.y + card.height);
 });
 
+test('bad squere map cases', () => {
+  let squereMap = new CardMap;
+  squereMap.append(new StartCard)
+  squereMap.append(new Card, CARD_RIGHT)
+  expect(() => squereMap.append(new Card, CARD_LEFT)).toThrow()
+  squereMap.append(new PurchaseCard(1500, [1300, 1600, 1800, 2000, 2200]), CARD_BOTTOM)
+  squereMap.append(new Card, CARD_LEFT)
+  expect(() => squereMap.append(new Card, CARD_TOP)).toThrow()
+});
+
 let squereMap = new CardMap;
 let card3 = new PurchaseCard(1500, [1300, 1600, 1800, 2000, 2200])
 
@@ -57,7 +67,6 @@ test('simple squere map', () => {
   squereMap.append(startCard)
   let card2 = new Card;
   squereMap.append(card2, CARD_RIGHT)
-  expect(() => squereMap.append(card3, CARD_LEFT)).toThrow()
   squereMap.append(card3, CARD_BOTTOM)
 
   // check connections
@@ -67,7 +76,6 @@ test('simple squere map', () => {
   expect(startCard.prevCard).toBe(card3)
 
   squereMap.append(new Card, CARD_LEFT)
-  expect(() => squereMap.append(new Card, CARD_TOP)).toThrow()
 });
 
 let player1 = Sessions.createPlayer()
@@ -85,7 +93,6 @@ test('add player', () => {
 test('turn', () => {
   let turn = squereMap.currentTurn;
   let other = (turn + 1) % 2
-  console.log(turn, other)
   expect(turn >= 0 && turn <= 1).toBeTruthy()
   squereMap.maxRoll = 1
   let path = squereMap.makeStep(players[other])
@@ -111,4 +118,39 @@ test('buy card', () => {
   const money = player1.money;
   expect(squereMap.buyCard(player1)).toBeTruthy()
   expect(player1.money).toBe(money - card3.cost)
+});
+
+test('remove unknown player from game', () => {
+  squereMap.removePlayer(Sessions.createPlayer('unknown'))
+});
+
+test('penality', () => {
+  const money = player2.money;
+  squereMap.makeStep(player2)
+  expect(player2.money).toBe(money - 1300)
+});
+
+test('map loop (add money)', () => {
+  squereMap.makeStep(player1)
+  squereMap.makeStep(player2)
+  const money = player1.money;
+  // first lopp
+  squereMap.makeStep(player1)
+  expect(player1.position).toBe(0)
+  expect(player1.money).toBe(money + 10000)
+});
+
+test('no my penality', () => {
+  squereMap.makeStep(player2)
+  squereMap.makeStep(player1)
+  squereMap.makeStep(player2)
+  const money = player1.money;
+  squereMap.makeStep(player1)
+  expect(player1.money).toBe(money)
+});
+
+test('second penality', () => {
+  const money = player2.money;
+  squereMap.makeStep(player2)
+  expect(player2.money).toBe(money - 1600)
 });

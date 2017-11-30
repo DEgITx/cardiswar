@@ -15,6 +15,7 @@ window.addEventListener('DOMContentLoaded', function()
 	var loadingGroup = null;
 	var freezeGamer = false;
 	var cursors;
+	let spectator = false;
 
 	let gameState = {
 		preload: preload,
@@ -130,7 +131,8 @@ window.addEventListener('DOMContentLoaded', function()
 
 	function drawInventory(align, alignLength)
 	{
-		moneyText.text = player.money + "$";
+		if(typeof moneyText !== 'undefined' && moneyText)
+			moneyText.text = player.money + "$";
 		
 		const offsetX = 120;
 		const cardsAvaliableWidth = game.camera.width - offsetX - 90;
@@ -634,16 +636,19 @@ window.addEventListener('DOMContentLoaded', function()
 			socket.emit('buycard');
 		}
 
-		var moneyBag = game.add.button(0, game.camera.height - 160, 'bag', buyCardAction, this, 2, 1, 0);
-		moneyBag.width /= 5;
-		moneyBag.height /= 5;
-		moneyBag.fixedToCamera = true;
-		moneyText = game.add.text(15, game.camera.height - 73, '0$',
+		if(!spectator)
 		{
-			fontSize: '25px',
-			fill: '#000'
-		});
-		moneyText.fixedToCamera = true;
+			var moneyBag = game.add.button(0, game.camera.height - 160, 'bag', buyCardAction, this, 2, 1, 0);
+			moneyBag.width /= 5;
+			moneyBag.height /= 5;
+			moneyBag.fixedToCamera = true;
+			moneyText = game.add.text(15, game.camera.height - 73, '0$',
+			{
+				fontSize: '25px',
+				fill: '#000'
+			});
+			moneyText.fixedToCamera = true;
+		}
 
 		players = data.map.players;
 		player = data.player;
@@ -659,32 +664,8 @@ window.addEventListener('DOMContentLoaded', function()
 		await drawMap();
 		drawInventory();
 		drawOnline();
-		drawCardInfo();
-
-		buyButton = game.add.button(game.camera.width - 106, game.camera.height - 205, 'buy', buyCardAction, this, 2, 1, 0);
-		buyButton.width = 80;
-		buyButton.height = 80;
-		buyButton.fixedToCamera = true;
-
-		buttonShowCards = game.add.button(game.camera.width - 90, game.camera.height - 260, 'down', function()
-		{
-			cardGroups.forEach((card) => card.hideShow())
-		}, this, 2, 1, 0);
-		buttonShowCards.width = 50;
-		buttonShowCards.height = 50;
-		buttonShowCards.fixedToCamera = true;
-
-		rollDice = game.add.button(game.camera.width - 120, game.camera.height - 120, 'dice_2', function()
-		{
-			if (freezeGamer)
-				return;
-
-			if (!playerDoingMove)
-				socket.emit('makestep');
-		}, this, 2, 1, 0);
-		rollDice.width = 110;
-		rollDice.height = 110;
-		rollDice.fixedToCamera = true;
+		if(!spectator)
+			drawCardInfo();
 
 		function checkTurn(data)
 		{
@@ -695,17 +676,49 @@ window.addEventListener('DOMContentLoaded', function()
 				loadingGroup = null;
 			}
 		}
-		checkTurn(data)
-		showMyTurn()
 
-		socket.on('joinplayer', function(data)
+		if(!spectator)
+		{
+			buyButton = game.add.button(game.camera.width - 106, game.camera.height - 205, 'buy', buyCardAction, this, 2, 1, 0);
+			buyButton.width = 80;
+			buyButton.height = 80;
+			buyButton.fixedToCamera = true;
+
+			buttonShowCards = game.add.button(game.camera.width - 90, game.camera.height - 260, 'down', function()
+			{
+				cardGroups.forEach((card) => card.hideShow())
+			}, this, 2, 1, 0);
+			buttonShowCards.width = 50;
+			buttonShowCards.height = 50;
+			buttonShowCards.fixedToCamera = true;
+
+			rollDice = game.add.button(game.camera.width - 120, game.camera.height - 120, 'dice_2', function()
+			{
+				if (freezeGamer)
+					return;
+	
+				if (!playerDoingMove)
+					socket.emit('makestep');
+			}, this, 2, 1, 0);
+			rollDice.width = 110;
+			rollDice.height = 110;
+			rollDice.fixedToCamera = true;
+	
+			checkTurn(data)
+			showMyTurn()
+		}
+
+		socket.on('joinPlayer', function(data)
 		{
 			console.log('Player ' + data.player.id + ' join');
 			map = data.map.map;
 			players = data.map.players;
 			addMapColor(data.player.id);
-			checkTurn(data)
-			showMyTurn()
+			if(!spectator)
+			{
+				checkTurn(data)
+				showMyTurn()
+			}
 			drawMap();
 			drawOnline();
 		});
@@ -720,8 +733,11 @@ window.addEventListener('DOMContentLoaded', function()
 				delete playersCursor[data.player.id];
 			}
 			removeMapColor(data.player.id);
-			checkTurn(data)
-			showMyTurn()
+			if(!spectator)
+			{
+				checkTurn(data)
+				showMyTurn()
+			}
 			drawOnline();
 		});
 
@@ -739,9 +755,10 @@ window.addEventListener('DOMContentLoaded', function()
 			}
 
 			playersCursor[data.player.id].movePoints = data.path;
-			checkTurn(data)
+			if(!spectator)
+				checkTurn(data)
 			playerDoingMove = true;
-			if(data.roll > 0)
+			if(typeof rollDice !== 'undefined' && data.roll > 0)
 				rollDice.loadTexture('dice_' + data.roll);
 		});
 
@@ -795,12 +812,13 @@ window.addEventListener('DOMContentLoaded', function()
 				drawCellBounds(data.cell.position);
 				drawInventory();
 				drawOnline();
-				drawCardInfo();
+				if(!spectator)
+					drawCardInfo();
 			}
 		});
 	}
 
-	socket.on('join', (data) =>
+	let startJoin = (data, spectr) => 
 	{
 		console.log('loading')
 		appLogo.destroy()
@@ -814,12 +832,16 @@ window.addEventListener('DOMContentLoaded', function()
 		});
 		setTimeout(async () => {
 			game.lockRender = true;
+			spectator = spectr
 			await onJoin(data)
 			game.lockRender = false;
 			text.destroy()
 			console.log('loaded')
 		}, 20)
-	});
+	}
+
+	socket.on('join', (data) => startJoin(data, false));
+	socket.on('joinSpectator', (data) => startJoin(data, true));
 
 	function preload()
 	{
@@ -837,6 +859,7 @@ window.addEventListener('DOMContentLoaded', function()
 		
 		game.load.image('sticker', 'images/sticker.png');
 		game.load.image('join', 'images/join.png');
+		game.load.image('spectate', 'images/spectate.png');
 
 		game.load.image('card', 'images/card.png');
 		game.load.image('card_shine', 'images/card_shine.png');
@@ -1001,13 +1024,27 @@ window.addEventListener('DOMContentLoaded', function()
 
 				if(session.players.length < maxPlayers)
 				{
-					let joinButton = game.add.button(sticker.width / 2, 17 + sticker.height, 'join', () => startLogin(sessionId), this, 2, 1, 0);
+					let joinButton = game.add.button(sticker.width / 2 + 20, 17 + sticker.height, 'join', () => startLogin(sessionId), this, 2, 1, 0);
 					joinButton.width /= 9;
 					joinButton.height /= 9;
 					joinButton.x -= joinButton.width /2;
 					joinButton.y -= joinButton.height + 30;
 					stickerTextGroup.add(joinButton)
 				}
+
+				let spectateButton = game.add.button(30, 17 + sticker.height, 'spectate', () => {
+					if (!joined)
+					{
+						joined = true;
+						socket.emit('spectate', sessionId);
+					}
+				}, this, 2, 1, 0);
+				spectateButton.width /= 8;
+				spectateButton.height /= 8;
+				spectateButton.x -= spectateButton.width /2;
+				spectateButton.y -= spectateButton.height + 20;
+				stickerTextGroup.add(spectateButton)
+
 
 				stickerJoinGroup.add(stickerTextGroup)
 				
@@ -1077,11 +1114,15 @@ window.addEventListener('DOMContentLoaded', function()
 			{
 				drawInventory();
 				drawOnline();
-				drawCardInfo();
+				if(!spectator)
+					drawCardInfo();
 				playerDoingMove = false;
 
-				showMyTurn()
-				buyButton.visible = player.canBuyCard;
+				if(!spectator)
+				{
+					showMyTurn()
+					buyButton.visible = player.canBuyCard;
+				}
 
 				if (freezeGamer)
 				{

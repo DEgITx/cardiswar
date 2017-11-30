@@ -9,10 +9,12 @@ module.exports = (io) => {
         sessions.addPlayer(socket)
     
         socket.on('disconnect', () => sessions.removePlayer(socket));
+
+        socket.on('spectate', (session) => sessions.addSpectorToSession(socket, session));
     
         socket.on('join', function(data)
         {
-            console.log('get jon', data.session)
+            console.log('start join to session', data.session)
             sessions.players[socket.id].nick = data.nick;
             const session = data.session
             try

@@ -82,12 +82,14 @@ class CardMap
 
 	removePlayer(player)
 	{
+		if(!this.players[player.id])
+			return;
+
 		player.inventory.forEach(function(card)
 		{
 			card.owner = null;
 		});
-		if (this.players[player.id] != null)
-			delete this.map[this.players[player.id].position].mapPlayers[player.id];
+		delete this.map[this.players[player.id].position].mapPlayers[player.id];
 		delete this.players[player.id];
 		this.playersKeys = Object.keys(this.players);
 		if (this.currentTurn > this.playersKeys.length - 1)
