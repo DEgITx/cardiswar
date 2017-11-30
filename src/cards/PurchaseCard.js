@@ -9,7 +9,7 @@ class PurchaseCard extends Card
 		this.penalty = penalty || [];
 		this.currentPenalty = 0;
 		this.group = group || null;
-		this.groupEffect = 0;
+		this.groupPower = 0;
 	}
 
 	postStep(map, player, position, path)

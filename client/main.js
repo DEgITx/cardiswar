@@ -237,12 +237,12 @@ window.addEventListener('DOMContentLoaded', function()
 				cardGroup.add(graphics);
 				graphics.beginFill(LightenDarkenColor(color, 140), 1);
 				graphics.drawCircle(110, 120, 100);
-				var groupEffectText = game.add.text(134, 132, card.groupEffect,
+				var groupPowerText = game.add.text(134, 132, card.groupPower,
 				{
 					fontSize: '64px',
 					fill: '#000'
 				});
-				cardGroup.add(groupEffectText);
+				cardGroup.add(groupPowerText);
 			}
 
 			var text = '';
