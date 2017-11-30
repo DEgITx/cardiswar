@@ -1059,7 +1059,7 @@ window.addEventListener('DOMContentLoaded', function()
 					stickerJoinGroup.add(stickerTextGroup)
 					
 					offsetX += sticker.width
-					if(offsetX >= game.camera.width)
+					if(offsetX + sticker.width >= game.camera.width)
 					{
 						offsetY += sticker.height
 						offsetX = 0
