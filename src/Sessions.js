@@ -8,7 +8,7 @@ class Sessions
         this.sockets = {}
 
         this.sessions = []
-        this.playersPerGame = 2;
+        this.playersPerGame = 4;
     }
 
     static createPlayer(id)
