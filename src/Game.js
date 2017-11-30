@@ -40,6 +40,9 @@ module.exports = (io) => {
     
         socket.on('makestep', function(data)
         {
+            if(!sessions.players[socket.id])
+                return;
+
             console.log('step')
             let players = sessions.players;
             let map = sessions.map(socket.id);
@@ -73,6 +76,9 @@ module.exports = (io) => {
     
         socket.on('buycard', function(data)
         {
+            if(!sessions.players[socket.id])
+                return;
+
             let players = sessions.players;
             let map = sessions.map(socket.id);
 
@@ -92,6 +98,9 @@ module.exports = (io) => {
     
         socket.on('sellcard', function(card)
         {
+            if(!sessions.players[socket.id])
+                return;
+
             let players = sessions.players;
             let map = sessions.map(socket.id);
 

@@ -131,8 +131,16 @@ window.addEventListener('DOMContentLoaded', function()
 
 	function drawInventory(align, alignLength)
 	{
+		// изменение денег
 		if(typeof moneyText !== 'undefined' && moneyText)
+		{
 			moneyText.text = player.money + "$";
+			moneyDiff = player.money - playerMoney;
+			playerMoney = player.money;
+			console.log(moneyDiff)
+			if(moneyDiff !== 0)
+				showMoneyDiff = true
+		}
 		
 		const offsetX = 120;
 		const cardsAvaliableWidth = game.camera.width - offsetX - 90;
@@ -638,6 +646,7 @@ window.addEventListener('DOMContentLoaded', function()
 
 		if(!spectator)
 		{
+			playerMoney = data.player.money
 			var moneyBag = game.add.button(0, game.camera.height - 160, 'bag', buyCardAction, this, 2, 1, 0);
 			moneyBag.width /= 5;
 			moneyBag.height /= 5;
@@ -1161,6 +1170,35 @@ window.addEventListener('DOMContentLoaded', function()
 				{
 					drawFreeze();
 				}
+			}
+		}
+
+		if(typeof showMoneyDiff !== 'undefined' && showMoneyDiff)
+		{
+			if(typeof moneyTextUp === 'undefined')
+			{
+				moneyTextUp = game.add.text(moneyText.x, moneyText.y, moneyDiff + '$',
+				{
+					fontSize: '25px',
+					fill: moneyDiff > 0 ? 'green' : 'red'
+				});
+			}
+			if(moneyTextUp.alpha > 0)
+			{
+				moneyTextUp.alpha -= 0.012
+				if(moneyTextUp.alpha < 0)
+					moneyTextUp.alpha = 0;
+
+				moneyTextUp.y -= 2;
+				
+				moneyTextUp.scale.x += 0.01;
+				moneyTextUp.scale.y += 0.01;
+			}
+			else
+			{
+				moneyTextUp.destroy()
+				moneyTextUp = undefined
+				showMoneyDiff = false;
 			}
 		}
 
