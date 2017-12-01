@@ -75,7 +75,7 @@ module.exports = (io) => {
             }
         });
     
-        socket.on('buycard', function(data)
+        socket.on('buycard', function(callback)
         {
             if(!sessions.players[socket.id])
                 return;
@@ -95,6 +95,11 @@ module.exports = (io) => {
                 cell: map.map[map.players[socket.id].position],
                 result: result
             });
+
+            if(callback)
+                callback({
+                    result: result
+                })
         });
     
         socket.on('sellcard', function(card)
@@ -132,10 +137,15 @@ module.exports = (io) => {
                 return;
 
             let data = map.useCard(player, card);
+            sessions.emit(socket, 'useCard',
+            {
+                player,
+                data
+            });
             if(callback)
                 callback({
                     player,
-                    data: data
+                    data
                 })
         });
     });

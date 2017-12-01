@@ -314,16 +314,7 @@ window.addEventListener('DOMContentLoaded', function()
 				sellCardImage.inputEnabled = true;
 				sellCardImage.events.onInputDown.add(function()
 				{
-					socket.emit('useCard', card, ({player: p, data}) => {
-						player = p;
-						if(data && data.map)
-						{
-							map = data.map
-							drawMap();
-						}
-						drawOnline();
-						drawInventory();
-					});
+					socket.emit('useCard', card);
 				}, this);
 				cardGroup.add(sellCardImage);
 			}
@@ -752,6 +743,7 @@ window.addEventListener('DOMContentLoaded', function()
 			}
 			drawMap();
 			drawOnline();
+			joinSound.play()
 		});
 
 		socket.on('leftedPlayer', function(data)
@@ -770,6 +762,7 @@ window.addEventListener('DOMContentLoaded', function()
 				showMyTurn()
 			}
 			drawOnline();
+			leftSound.play()
 		});
 
 		socket.on('makestep', function(data)
@@ -778,6 +771,9 @@ window.addEventListener('DOMContentLoaded', function()
 			players = data.map.players;
 			if (data.player.id == player.id)
 			{
+				if(player.money > data.player.money)
+					needFineSound = true;
+
 				player = data.player;
 			}
 			if (data.map.losers.length > 0)
@@ -786,6 +782,9 @@ window.addEventListener('DOMContentLoaded', function()
 			}
 
 			playersCursor[data.player.id].movePoints = data.path;
+			if(data.path.length > 0)
+				firstStep = true;
+
 			if(!spectator)
 				checkTurn(data)
 			playerDoingMove = true;
@@ -814,6 +813,7 @@ window.addEventListener('DOMContentLoaded', function()
 				drawCellBounds(data.player.position);
 				drawInventory();
 				drawOnline();
+				buySound.play()
 			}
 		});
 
@@ -845,8 +845,23 @@ window.addEventListener('DOMContentLoaded', function()
 				drawOnline();
 				if(!spectator)
 					drawCardInfo();
+
+				sellSound.play()
 			}
 		});
+
+		socket.on('useCard', ({player: p, data}) => {
+			if(p.id === player.id)
+				player = p;
+
+			if(data && data.map)
+			{
+				map = data.map
+				drawMap();
+			}
+			drawOnline();
+			drawInventory();
+		})
 	}
 
 	let startJoin = (data, spectr) => 
@@ -914,6 +929,14 @@ window.addEventListener('DOMContentLoaded', function()
 		game.load.image('dice_4', 'images/dice/4.png');
 		game.load.image('dice_5', 'images/dice/5.png');
 		game.load.image('dice_6', 'images/dice/6.png');	
+
+		// audio
+		game.load.audio('step', 'sounds/step.wav');
+		game.load.audio('buy', 'sounds/buy.wav');
+		game.load.audio('left', 'sounds/left.wav');
+		game.load.audio('join', 'sounds/join.wav');
+		game.load.audio('sell', 'sounds/sell.wav');
+		game.load.audio('fine', 'sounds/fine.wav');
 	}
 
 	const loadingScreenState = {
@@ -1121,6 +1144,13 @@ window.addEventListener('DOMContentLoaded', function()
 				drawSession();
 			});
 		});
+
+		buySound = game.add.audio('buy');
+		stepSound = game.add.audio('step');
+		leftSound = game.add.audio('left');
+		joinSound = game.add.audio('join');
+		sellSound = game.add.audio('sell');
+		fineSound = game.add.audio('fine');
 	}
 
 	var waitPlayerCursorOnPoint = 1;
@@ -1172,6 +1202,16 @@ window.addEventListener('DOMContentLoaded', function()
 					{
 						playersCursor[id].movePoints.shift();
 						waitPlayerCursorOnPoint = 25;
+						
+						if(typeof needFineSound !== 'undefined' && needFineSound && playersCursor[id].movePoints.length === 0)
+						{
+							fineSound.play()
+							needFineSound = false
+						}
+						else
+						if(!firstStep)
+							stepSound.play()
+						firstStep = false
 					}
 				}
 			}
