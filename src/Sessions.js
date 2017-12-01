@@ -21,6 +21,7 @@ class Sessions
             cardGroupMap: {},
             nick: '',
             canBuyCard: false,
+            voteReset: false,
         }
     }
 

@@ -20,9 +20,7 @@ class PortalCard extends Card
 	{
 		if (this.portalPoint > 0)
 		{
-			map.players[player.id].position = this.portalPoint;
-			delete this.mapPlayers[player.id];
-			map.map[this.portalPoint].mapPlayers[player.id] = player;
+			map.movePlayer(player, this.portalPoint);
 			path.push(this.portalPoint);
 		}
 	}

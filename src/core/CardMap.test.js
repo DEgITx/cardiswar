@@ -142,17 +142,17 @@ test('map loop (add money)', () => {
 });
 
 test('no my penality', () => {
-  squereMap.makeStep(player2)
-  squereMap.makeStep(player1)
-  squereMap.makeStep(player2)
+  squereMap.makeStep(player2) // loop 0
+  squereMap.makeStep(player1) // 1
+  squereMap.makeStep(player2) // 1
   const money = player1.money;
-  squereMap.makeStep(player1)
+  squereMap.makeStep(player1) // 2
   expect(player1.money).toBe(money)
 });
 
 test('second penality', () => {
   const money = player2.money;
-  squereMap.makeStep(player2)
+  squereMap.makeStep(player2) // 2
   expect(player2.money).toBe(money - 1600)
 });
 
@@ -165,4 +165,21 @@ test('sell card', () => {
 test('buy spectacular card', () => {
   expect(squereMap.buyCard(player2, card3)).toBeTruthy()
   expect(card3.owner).toBe(player2)
+});
+
+test('move to cell', () => {
+  squereMap.movePlayer(player1, 0)
+  expect(player1.position).toBe(0)
+  expect(squereMap.map[2].mapPlayers[player1.id]).toBeUndefined()
+  expect(squereMap.map[2].mapPlayers[player2.id]).toBeDefined()
+});
+
+test('reset', () => {
+  expect(player2.inventory.length).toBe(1);
+  squereMap.reset()
+  expect(player1.position).toBe(0)
+  expect(player2.position).toBe(0)
+  expect(squereMap.map[2].mapPlayers[player1.id]).toBeUndefined()
+  expect(squereMap.map[2].mapPlayers[player2.id]).toBeUndefined()
+  expect(player2.inventory.length).toBe(0);
 });

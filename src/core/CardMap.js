@@ -19,6 +19,48 @@ class CardMap
 		this.cards = []
 	}
 
+	reset()
+	{
+		for(const playerId in this.players)
+		{
+			let player = this.players[playerId];
+			for(let card of player.inventory)
+				this.removePlayerCard(player, card);
+
+			this.movePlayer(player, 0);
+			player.stepskip = 0;
+			player.money = 20000;
+			player.canBuyCard = false;
+			player.voteReset = false;
+		}
+	}
+
+	voteReset(player)
+	{
+		player = this.players[player.id];
+		player.voteReset = true;
+
+		let votes = 0;
+		for(const playerId in this.players)
+		{
+			let player = this.players[playerId];
+			if(player.voteReset)
+				votes++;
+		}
+		if(votes >= Math.floor(this.playersKeys.length / 2) + 1)
+		{
+			console.log('vote for reseting')
+			this.reset()
+			return true;
+		}
+	}
+
+	disableVoteReset(player)
+	{
+		player = this.players[player.id];
+		player.voteReset = false;
+	}
+
 	append(card, position)
 	{
         if(!(card instanceof Card))
@@ -107,6 +149,15 @@ class CardMap
 			this.losers.splice(loserIndex, 1);
 		}
 		console.log('removed player ' + player.nick + ' from game');
+	}
+
+	movePlayer(player, position)
+	{
+		let oldCell = this.map[player.position];
+		let cell = this.map[position];
+		delete oldCell.mapPlayers[player.id];
+		this.players[player.id].position = cell.position;
+		cell.mapPlayers[player.id] = player;
 	}
 
 	makeStep(player)

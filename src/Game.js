@@ -148,5 +148,44 @@ module.exports = (io) => {
                     data
                 })
         });
+
+        socket.on('voteReset', function(callback)
+        {
+            const player = sessions.players[socket.id];
+            if(!player)
+                return;
+
+             let map = sessions.map(socket.id);
+             if(!map)
+                return;
+
+            if(map.voteReset(player))
+                sessions.emit(socket, 'resetMap',
+                {
+                    player,
+                    map
+                });
+            if(callback)
+                callback({
+                    player
+                })
+        });
+
+        socket.on('disVoteReset', function(callback)
+        {
+            const player = sessions.players[socket.id];
+            if(!player)
+                return;
+
+             let map = sessions.map(socket.id);
+             if(!map)
+                return;
+
+            map.disableVoteReset(player)
+            if(callback)
+                callback({
+                    player
+                })
+        });
     });
 }

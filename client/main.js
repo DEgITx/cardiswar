@@ -656,6 +656,27 @@ window.addEventListener('DOMContentLoaded', function()
 			socket.emit('buycard');
 		}
 
+		let createVoteResetButton = (voteReset) => {
+			if(typeof resetButton !== 'undefined' && resetButton)
+				resetButton.destroy()
+			if(!voteReset)
+			{
+				resetButton = game.add.button(7, game.camera.height - 230, 'reset', () => {
+					socket.emit('voteReset', ({player: p}) => createVoteResetButton(p.voteReset));
+				}, this, 2, 1, 0);
+				resetButton.width /= 5;
+				resetButton.height /= 5;
+			}
+			else
+			{
+				resetButton = game.add.button(7, game.camera.height - 230, 'reset_yes', () => {
+					socket.emit('disVoteReset', ({player: p}) => createVoteResetButton(p.voteReset));
+				}, this, 2, 1, 0);
+				resetButton.width /= 5;
+				resetButton.height /= 5;
+			}
+		}
+
 		if(!spectator)
 		{
 			playerMoney = data.player.money
@@ -669,6 +690,8 @@ window.addEventListener('DOMContentLoaded', function()
 				fill: '#000'
 			});
 			moneyText.fixedToCamera = true;
+
+			createVoteResetButton(false)
 		}
 
 		players = data.map.players;
@@ -861,6 +884,21 @@ window.addEventListener('DOMContentLoaded', function()
 			drawOnline();
 			drawInventory();
 		})
+
+		socket.on('resetMap', (data) => {
+			map = data.map.map;
+			players = data.map.players;
+			player = players[player.id]
+			if(!spectator)
+			{
+				checkTurn(data)
+				showMyTurn()
+			}
+			drawMap();
+			drawOnline();
+			drawInventory();
+			createVoteResetButton(player.voteReset)
+		})
 	}
 
 	let startJoin = (data, spectr) => 
@@ -911,6 +949,8 @@ window.addEventListener('DOMContentLoaded', function()
 		game.load.image('card_shine', 'images/card_shine.png');
 		game.load.image('sell', 'images/sell.png');
 		game.load.image('use', 'images/use.png');
+		game.load.image('reset', 'images/reset.png');
+		game.load.image('reset_yes', 'images/reset_yes.png');
 
 		game.load.image('buy', 'images/buy.png');
 		game.load.image('bag', 'images/bag.png');
