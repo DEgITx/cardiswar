@@ -511,12 +511,11 @@ window.addEventListener('DOMContentLoaded', function()
 	{
 		return new Promise((mapResolve) =>
 		{
-		if (mapGroup != null)
-		{
-			mapGroup.destroy();
-			mapGroup = null;
-		}
-		mapGroup = game.add.group();
+		if(!mapGroup)
+			mapGroup = game.add.group();
+		else
+			mapGroup.removeAll()
+		
 		var promise = new Promise(function(resolve, reject)
 		{
 			var loaderCounter = 0;
