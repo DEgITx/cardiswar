@@ -1000,9 +1000,13 @@ window.addEventListener('DOMContentLoaded', function()
 		});
 		nickInput.x -= nickInput.width / 2;
 		nickInput.y -= nickInput.height / 2;
+		console.log(nickInput)
+		if(localStorage.getItem('nick'))
+			nickInput.setText(localStorage.getItem('nick'))
 
 		const startLogin = (session) => {
-			if(nickInput.text.text.length <= 0 || nickInput.text.text.length >= 20)
+			const nick = nickInput.text.text;
+			if(nick.length <= 0 || nick.length >= 20)
 			{
 				enterNickText.visible = 1;
 			}
@@ -1011,14 +1015,14 @@ window.addEventListener('DOMContentLoaded', function()
 				enterNickText.visible = 0;
 			}
 
-			if (!joined && nickInput.text.text.length > 0 && nickInput.text.text.length < 20)
+			if (!joined && nick.length > 0 && nick.length < 20)
 			{
 				joined = true;
-				console.log('join')
+				localStorage.setItem('nick', nick)
 				socket.emit('join',
 				{
-					nick: nickInput.text.text,
-					session: session
+					nick,
+					session
 				});
 			}
 		}
