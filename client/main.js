@@ -871,6 +871,7 @@ window.addEventListener('DOMContentLoaded', function()
 		nickInput.destroy();
 		nickEnterButton.destroy()
 		stickerJoinGroup.destroy()
+		enterNickText.destroy()
 		let text = game.add.text(game.camera.width/2 - 120, game.camera.height/2, 'Loading game data... it can take a little time...',
 		{
 			fontSize: '18px',
@@ -1001,7 +1002,16 @@ window.addEventListener('DOMContentLoaded', function()
 		nickInput.y -= nickInput.height / 2;
 
 		const startLogin = (session) => {
-			if (!joined && nickInput.text.text.length > 0)
+			if(nickInput.text.text.length <= 0 || nickInput.text.text.length >= 20)
+			{
+				enterNickText.visible = 1;
+			}
+			else
+			{
+				enterNickText.visible = 0;
+			}
+
+			if (!joined && nickInput.text.text.length > 0 && nickInput.text.text.length < 20)
 			{
 				joined = true;
 				console.log('join')
@@ -1031,6 +1041,13 @@ window.addEventListener('DOMContentLoaded', function()
 		nickInput.y -= 10
 		nickEnterButton.y -= 10
 		appLogo.y -= 10
+
+		enterNickText = game.add.text(nickInput.x, nickInput.y + nickInput.height + 8, 'Enter your nick before join',
+		{
+			fontSize: '25px',
+			fill: 'red'
+		});
+		enterNickText.visible = 0;
 
 		game.input.keyboard.onDownCallback = function(e)
 		{
