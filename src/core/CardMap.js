@@ -129,8 +129,8 @@ class CardMap
 			};
 		}
 
-		//let roll = Math.floor((Math.random() * this.maxRoll) + 1);
-		let roll = 1;
+		let roll = Math.floor((Math.random() * this.maxRoll) + 1);
+		//let roll = 1;
 		const currentPosition = this.players[player.id].position;
 		console.log('player ' + this.players[player.id].nick + ' roll: ' + roll);
 		let path = [];
