@@ -248,14 +248,26 @@ window.addEventListener('DOMContentLoaded', function()
 			var text = '';
 			if (card.text.length > 0)
 				text = card.text;
-			else if (card.group.text.length > 0)
+			else if (card.group && card.group.text.length > 0)
 				text = card.group.text;
+
+			let textColor = '#000'
+			if(typeof card.textColor !== 'undefined')
+				textColor = card.textColor
+			else if(card.group && typeof card.group.textColor !== 'undefined')
+				textColor = card.group.textColor
+			
+			if(Number.isInteger(textColor))
+				textColor = '#' + textColor.toString(16);
+
+			console.log(textColor)
+
 			if (text.length > 0)
 			{
 				var cardText = game.add.text(90, 550, text,
 				{
 					fontSize: '31px',
-					fill: '#000',
+					fill: textColor,
 					wordWrap: true,
 					wordWrapWidth: 628
 				});

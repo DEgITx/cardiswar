@@ -45,7 +45,7 @@ module.exports = () => {
     map.append(new PurchaseCard(3500, [3200, 3500, 3900, 4300, 4700], waterGroup), CARD_LEFT);
     map.append(new PrisonCard, CARD_BOTTOM);
     map.append(new PurchaseCard(4000, [2200, 4000, 5000, 5200, 5500], waterGroup), CARD_BOTTOM);
-    var fireGroup = new CardGroup(0xEB342A, 'images/cards/fire.png', 'Вы жгете, раз купили эту карту. Что может быть лучше чем испепялять своих врагов, закидывая их сигаретами?');
+    var fireGroup = new CardGroup(0xEB342A, 'images/cards/fire.png', 'Ваши глаза заглись в пламени ночи. Что может быть лучше чем испепялять своих врагов, закидывая их сигаретами?');
     map.append(new PurchaseCard(5000, [3500, 4000, 4500, 5200, 5400], fireGroup), CARD_RIGHT);
     map.append(new PurchaseCard(5500, [4500, 4700, 5200, 5600, 6000], fireGroup), CARD_RIGHT);
     map.append(new WhiteCard);
@@ -53,13 +53,13 @@ module.exports = () => {
     map.append(new PurchaseCard(6000, [5200, 5400, 6100, 6600, 7100], fireGroup), CARD_RIGHT);
     map.append(new PurchaseCard(6500, [6500, 7000, 7400, 7600, 8000], fireGroup), CARD_RIGHT);
     map.append(new WhiteCard, CARD_RIGHT);
-    var strangeGroup = new CardGroup(0x8C8C8C, 'images/cards/question_wh.png', 'Очень странный сет карт. Я вам как создатель этого сета заявляю.');
+    var strangeGroup = new CardGroup(0x8C8C8C, 'images/cards/question_wh.png', 'Очень странный сет карт. Я вам как создатель этого сета заявляю. Не покупайте его больше.');
     map.append(new PurchaseCard(6969, [4647, 5505, 6969, 6969, 0], strangeGroup), CARD_BOTTOM);
     map.append(new PurchaseCard(1408, [1408, 1408, 8041, 8041, 8041], strangeGroup), CARD_BOTTOM);
     map.append(new PurchaseCard(1, [0, 0, 1, 1, 1001], strangeGroup), CARD_LEFT);
     map.append(new WhiteCard, CARD_LEFT);
     map.append(new PurchaseCard(-7000, [-3000, -4000, -5000, 17502, 24242], strangeGroup), CARD_LEFT);
-    var electricityGroup = new CardGroup(0xFFE17D, 'images/cards/electricity.png', 'Фонарик, дрель, электропсихометр - эти приборы объединяет одно. Их нету у тебя дома. Вообщем электричество.');
+    var electricityGroup = new CardGroup(0xFFE17D, 'images/cards/electricity.png', 'Фонарик, дрель, электропсихометр - эти приборы объединяет одно. Их нету у тебя дома. Вообщем электрический сет.');
     map.append(new PurchaseCard(7200, [6500, 6600, 6900, 7800, 9000], electricityGroup), CARD_LEFT);
     map.append(new PurchaseCard(8000, [6300, 8000, 9000, 10000, 11000], electricityGroup), CARD_LEFT);
     map.append(new WhiteCard, CARD_LEFT);
@@ -70,7 +70,8 @@ module.exports = () => {
     var inyanGroup = new CardGroup(0xDB3B9E, 'images/cards/inyan.jpg', 'Добро и зло - эти 2 карты неразлучны, до того момента пока 2 идиота их не купят, каждый по одной.');
     map.append(new PurchaseCard(12500, [10000, 12500, 15000, 17500, 20000], inyanGroup), CARD_TOP);
     map.append(new PurchaseCard(15000, [15000, 17500, 20000, 22000, 25000], inyanGroup), CARD_TOP);
-    var darknessGroup = new CardGroup(0x010101, 'images/cards/darkness.png', 'Лишь тьма. И другие злые эфекты тьмы.');
+    var darknessGroup = new CardGroup(0x010101, 'images/cards/darkness.png', 'Темной темной ночью. На темной темной улице. В темном темном переулке ничего не произошло.');
+    darknessGroup.textColor = 0xFFFFFF;
     map.append(new PurchaseCard(18000, [15000, 18000, 20000, 25000, 27500], darknessGroup), CARD_TOP);
     map.append(new PurchaseCard(20000, [17500, 19000, 24000, 28000, 30000], darknessGroup), CARD_LEFT);
     map.append(new WhiteCard, CARD_TOP);

@@ -8,6 +8,7 @@ class CardGroup
 		this.color = color || '0xFF0000';
 		this.image = image || '';
 		this.text = text || '';
+		this.textColor = undefined;
 		this.description = '';
 	}
 }
