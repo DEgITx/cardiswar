@@ -1,4 +1,8 @@
-var socket = io(document.location.protocol + '//' + document.location.hostname + (PRODUCTION ? '/' : ':8099/'));
+import registerServiceWorker from './registerServiceWorker';
+import io from 'socket.io/node_modules/socket.io-client';
+const socket = io(document.location.protocol + '//' + document.location.hostname + (PRODUCTION ? '/' : ':8099/'));
+
+registerServiceWorker();
 
 window.addEventListener('DOMContentLoaded', function()
 {
@@ -135,11 +139,11 @@ window.addEventListener('DOMContentLoaded', function()
 		if(typeof moneyText !== 'undefined' && moneyText)
 		{
 			moneyText.text = player.money + "$";
-			moneyDiff = player.money - playerMoney;
-			playerMoney = player.money;
+			window.moneyDiff = player.money - window.playerMoney;
+			window.playerMoney = player.money;
 			console.log(moneyDiff)
 			if(moneyDiff !== 0)
-				showMoneyDiff = true
+				window.showMoneyDiff = true
 		}
 		
 		const offsetX = 120;
@@ -673,7 +677,7 @@ window.addEventListener('DOMContentLoaded', function()
 				resetButton.destroy()
 			if(!voteReset)
 			{
-				resetButton = game.add.button(7, game.camera.height - 230, 'reset', () => {
+				window.resetButton = game.add.button(7, game.camera.height - 230, 'reset', () => {
 					socket.emit('voteReset', ({player: p}) => createVoteResetButton(p.voteReset));
 				}, this, 2, 1, 0);
 				resetButton.width /= 5;
@@ -681,22 +685,23 @@ window.addEventListener('DOMContentLoaded', function()
 			}
 			else
 			{
-				resetButton = game.add.button(7, game.camera.height - 230, 'reset_yes', () => {
+				window.resetButton = game.add.button(7, game.camera.height - 230, 'reset_yes', () => {
 					socket.emit('disVoteReset', ({player: p}) => createVoteResetButton(p.voteReset));
 				}, this, 2, 1, 0);
 				resetButton.width /= 5;
 				resetButton.height /= 5;
 			}
+			resetButton.fixedToCamera = true;
 		}
 
 		if(!spectator)
 		{
-			playerMoney = data.player.money
+			window.playerMoney = data.player.money
 			var moneyBag = game.add.button(0, game.camera.height - 160, 'bag', buyCardAction, this, 2, 1, 0);
 			moneyBag.width /= 5;
 			moneyBag.height /= 5;
 			moneyBag.fixedToCamera = true;
-			moneyText = game.add.text(15, game.camera.height - 73, '0$',
+			window.moneyText = game.add.text(15, game.camera.height - 73, '0$',
 			{
 				fontSize: '25px',
 				fill: '#000'
@@ -713,7 +718,7 @@ window.addEventListener('DOMContentLoaded', function()
 		console.log(map);
 
 		// detect color map
-		for (id in players)
+		for (const id in players)
 		{
 			addMapColor(id);
 		}
@@ -735,12 +740,12 @@ window.addEventListener('DOMContentLoaded', function()
 
 		if(!spectator)
 		{
-			buyButton = game.add.button(game.camera.width - 106, game.camera.height - 205, 'buy', buyCardAction, this, 2, 1, 0);
+			window.buyButton = game.add.button(game.camera.width - 106, game.camera.height - 205, 'buy', buyCardAction, this, 2, 1, 0);
 			buyButton.width = 80;
 			buyButton.height = 80;
 			buyButton.fixedToCamera = true;
 
-			buttonShowCards = game.add.button(game.camera.width - 90, game.camera.height - 260, 'down', function()
+			window.buttonShowCards = game.add.button(game.camera.width - 90, game.camera.height - 260, 'down', function()
 			{
 				cardGroups.forEach((card) => card.hideShow())
 			}, this, 2, 1, 0);
@@ -748,7 +753,7 @@ window.addEventListener('DOMContentLoaded', function()
 			buttonShowCards.height = 50;
 			buttonShowCards.fixedToCamera = true;
 
-			rollDice = game.add.button(game.camera.width - 120, game.camera.height - 120, 'dice_2', function()
+			window.rollDice = game.add.button(game.camera.width - 120, game.camera.height - 120, 'dice_2', function()
 			{
 				if (freezeGamer)
 					return;
@@ -817,7 +822,7 @@ window.addEventListener('DOMContentLoaded', function()
 
 			playersCursor[data.player.id].movePoints = data.path;
 			if(data.path.length > 0)
-				firstStep = true;
+				window.firstStep = true;
 
 			if(!spectator)
 				checkTurn(data)
@@ -1097,7 +1102,7 @@ window.addEventListener('DOMContentLoaded', function()
 		nickEnterButton.y -= 10
 		appLogo.y -= 10
 
-		enterNickText = game.add.text(nickInput.x, nickInput.y + nickInput.height + 8, 'Enter your nick before join',
+		window.enterNickText = game.add.text(nickInput.x, nickInput.y + nickInput.height + 8, 'Enter your nick before join',
 		{
 			fontSize: '25px',
 			fill: 'red'
@@ -1114,7 +1119,7 @@ window.addEventListener('DOMContentLoaded', function()
 
 		cursors = game.input.keyboard.createCursorKeys();
 
-		stickerJoinGroup = game.add.group()
+		window.stickerJoinGroup = game.add.group()
 		socket.emit('sessions', ({sessions, maxPlayers}) => {
 			let drawSession = () => {
 				if(joined)
@@ -1217,12 +1222,12 @@ window.addEventListener('DOMContentLoaded', function()
 			});
 		});
 
-		buySound = game.add.audio('buy');
-		stepSound = game.add.audio('step');
-		leftSound = game.add.audio('left');
-		joinSound = game.add.audio('join');
-		sellSound = game.add.audio('sell');
-		fineSound = game.add.audio('fine');
+		window.buySound = game.add.audio('buy');
+		window.stepSound = game.add.audio('step');
+		window.leftSound = game.add.audio('left');
+		window.joinSound = game.add.audio('join');
+		window.sellSound = game.add.audio('sell');
+		window.fineSound = game.add.audio('fine');
 	}
 
 	var waitPlayerCursorOnPoint = 1;
@@ -1283,7 +1288,7 @@ window.addEventListener('DOMContentLoaded', function()
 						else
 						if(!firstStep)
 							stepSound.play()
-						firstStep = false
+						window.firstStep = false
 					}
 				}
 			}
@@ -1312,7 +1317,7 @@ window.addEventListener('DOMContentLoaded', function()
 		{
 			if(typeof moneyTextUp === 'undefined')
 			{
-				moneyTextUp = game.add.text(moneyText.x, moneyText.y, moneyDiff + '$',
+				window.moneyTextUp = game.add.text(moneyText.x, moneyText.y, moneyDiff + '$',
 				{
 					fontSize: '25px',
 					fill: moneyDiff > 0 ? 'green' : 'red'
@@ -1333,7 +1338,7 @@ window.addEventListener('DOMContentLoaded', function()
 			{
 				moneyTextUp.destroy()
 				moneyTextUp = undefined
-				showMoneyDiff = false;
+				window.showMoneyDiff = false;
 			}
 		}
 
