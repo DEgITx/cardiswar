@@ -1,6 +1,7 @@
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const SWPrecacheWebpackPlugin = require('sw-precache-webpack-plugin');
+const glob = require('glob')
 
 module.exports = {
     entry: "./client/main.js",
@@ -61,10 +62,8 @@ module.exports = {
             // Don't precache sourcemaps (they're large) and build asset manifest:
             staticFileGlobsIgnorePatterns: [/\.map$/, /asset-manifest\.json$/],
             mergeStaticsConfig: true,
-            staticFileGlobs: [
-            'documentation/doc/index.html'
-            ],
-            stripPrefix: 'documentation',
+            staticFileGlobs: glob.sync('public/images/**/*.*').concat(glob.sync('public/sounds/**/*.*')),
+            stripPrefix: 'public/',
         }),
         new webpack.optimize.UglifyJsPlugin({
             compress: {
