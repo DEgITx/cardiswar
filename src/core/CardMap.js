@@ -24,7 +24,7 @@ class CardMap
 		for(const playerId in this.players)
 		{
 			let player = this.players[playerId];
-			for(let card of player.inventory)
+			for(let card of player.inventory.slice())
 				this.removePlayerCard(player, card);
 
 			this.movePlayer(player, 0);
