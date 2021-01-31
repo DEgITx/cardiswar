@@ -2,8 +2,6 @@
 import io from 'socket.io-client';
 const socket = io(document.location.protocol + '//' + document.location.hostname + ':8099/');
 
-console.log(document.location.protocol + '//' + document.location.hostname + (PRODUCTION ? '/' : ':8099/'))
-
 //registerServiceWorker();
 
 window.addEventListener('DOMContentLoaded', function()

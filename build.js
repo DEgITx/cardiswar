@@ -1,4 +1,4 @@
-const config = require('./webpack.config.production');
+const config = require('./webpack.config');
 const webpack = require('webpack');
 
 let compiler = webpack(config);
