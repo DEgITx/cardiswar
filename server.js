@@ -8,7 +8,7 @@ server.listen(8099);
 
 app.get('/', function(req, res)
 {
-	res.sendfile(__dirname + '/public/index.html');
+	res.sendFile(__dirname + '/public/index.html');
 });
 
 app.use(express.static('public'));

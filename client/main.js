@@ -1,8 +1,10 @@
-import registerServiceWorker from './registerServiceWorker';
-import io from 'socket.io/node_modules/socket.io-client';
-const socket = io(document.location.protocol + '//' + document.location.hostname + (PRODUCTION ? '/' : ':8099/'));
+//import registerServiceWorker from './registerServiceWorker';
+import io from 'socket.io-client';
+const socket = io(document.location.protocol + '//' + document.location.hostname + ':8099/');
 
-registerServiceWorker();
+console.log(document.location.protocol + '//' + document.location.hostname + (PRODUCTION ? '/' : ':8099/'))
+
+//registerServiceWorker();
 
 window.addEventListener('DOMContentLoaded', function()
 {
